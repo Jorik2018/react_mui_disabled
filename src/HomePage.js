@@ -1,49 +1,118 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import { createTheme } from '@mui/material/styles';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import MailIcon from '@mui/icons-material/Mail';
-import Snackbar from '@mui/material/Snackbar';
-import { debounce,http } from 'gra-react-utils';
+import React, { useEffect } from 'react';
 import {
-  MoveToInbox as InboxIcon,
-  Menu as MenuIcon, Add as AddIcon, Edit as EditIcon, Quiz as QuizIcon,
-  Logout as LogoutIcon
+  Mail as MailIcon,
+  Menu as MenuIcon,
+  InsertChart as ChartIcon,
+  PivotTableChart as PivotTableChartIcon,
+  Map as MapIcon,
+  Add as AddIcon,
+  Quiz as QuizIcon,
+  Logout as LogoutIcon,
+  Group as GroupIcon,
+  AccountCircle as AccountCircleIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import {
-  Alert, AppBar, Box, Divider, CssBaseline, Drawer, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, Toolbar, Typography
+  Alert, AppBar, Box, CssBaseline, Drawer, Divider, IconButton, List, ListItem,
+  ListItemButton, ListItemIcon, ListItemText, Snackbar, Toolbar,
+  Typography
 } from '@mui/material';
+import { debounce, http } from 'gra-react-utils';
 import lazyLoader from "./utils/LazyLoader";
 
 import {
-  BrowserRouter as Router,
   Routes,
-  Route,useLocation,
-  Link,
-  useParams,
-  useNavigate,
-  useRouteMatch
+  Route, useLocation,
+  useNavigate
 } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
-const HomePage = ({logOut}) => {
+function VDrawer(props) {
+  const dispatch = useDispatch();
 
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const onClose = () => { dispatch({ type: "drawer" }) };
+  const drawer = useSelector((state) => state.drawer);
+  return <Drawer variant="temporary"
+    open={drawer}
+    onClose={onClose}
+    ModalProps={{
+      keepMounted: true, // Better open performance on mobile.
+    }}
+    sx={{
+      display: { xs: 'block', sm: 'none' },
+      '& .MuiDrawer-paper': { boxSizing: 'border-box', width: props.width },
+    }}>
+    {props.children}
+  </Drawer>
+}
+
+function VSnackbar() {
+  const snack = useSelector((state) => state.snack);
+
+  const dispatch = useDispatch();
+
+  const onClose = () => { dispatch({ type: "snack" }) };
+
+  return <Snackbar open={!!snack}
+    sx={{ bottom: 70 }}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    autoHideDuration={2000} onClose={onClose}>
+    {<Alert severity="success" variant="filled" onClose={onClose} sx={{ width: '100%' }}>
+      {snack ? snack.msg : ''}
+    </Alert>
+    }
+  </Snackbar>;
+}
+
+function VAppBar(props) {
+
+  const networkStatus = useSelector((state) => state.networkStatus);
+
+  return <AppBar style={{ 'background': networkStatus.connected ? '' : 'red' }} {...props}
+    position="fixed"
+  >{props.children}</AppBar>;
+
+}
+
+const HomePage = ({ logOut }) => {
+
+  const [o, setO] = React.useState({ title: 'Cuestionarios Discapacidad' });
+
+  const [perms, setPerms] = React.useState([]);
+
+  const dispatch = useDispatch();
+
+  const title = useSelector((state) => state.title);
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    dispatch({ type: 'drawer' });
   };
 
   const items = [
     {
-      text: 'Cuestionarios', icon: <QuizIcon />, path: '/', items: [
+      perms:'DISABLED_REGISTER',text: 'Cuestionarios Discapacidad', icon: <QuizIcon />, path: '/', items: [
         { text: 'Agregar', icon: <AddIcon />, path: '/create' }
       ]
+    },
+    {
+      text: 'Configuración', icon: <SettingsIcon />, path: '/setting'
+    },
+    {
+      text: 'Mi cuenta', icon: <AccountCircleIcon />, path: '/profile'
+    },
+    {
+      perms:'ACCESS_USERS',text: 'Usuarios', icon: <GroupIcon />, path: '/user', items: [
+        { text: 'Agregar', icon: <AddIcon />, path: '/user/create' }
+      ]
+    },
+    {
+      text: 'Graficos', icon: <ChartIcon />, path: '/charts'
+    },
+    {
+      text: 'Mapa', icon: <MapIcon />, path: '/map'
+    },
+    {
+      text: 'Pivot', icon: <PivotTableChartIcon />, path: '/pivot'
     },
     {
       text: 'Salir', icon: <LogoutIcon />, onClick: () => {
@@ -57,8 +126,10 @@ const HomePage = ({logOut}) => {
       <Toolbar />
       <Divider />
       <List>
-        {items.map((item, index0) => (
-          <React.Fragment key={'List_'+index0} >
+        {items.filter((e)=>{
+            return e.perms?perms.includes(e.perms):true;
+        }).map((item, index0) => (
+          <React.Fragment key={'List_' + index0} >
             <ListItem>
               <ListItemButton onClick={item.onClick ? item.onClick : () => {
                 handleDrawerToggle();
@@ -72,7 +143,7 @@ const HomePage = ({logOut}) => {
               </ListItemButton>
             </ListItem>
             {item.items?.map((item, index) => (
-              <ListItem key={'List_'+index0+'_'+index} disablePadding style={{ paddingLeft: '20px' }}>
+              <ListItem key={'List_' + index0 + '_' + index} disablePadding style={{ paddingLeft: '40px' }}>
                 <ListItemButton onClick={item.onClick ? item.onClick : () => {
                   handleDrawerToggle();
                   navigate(item.path);
@@ -95,53 +166,69 @@ const HomePage = ({logOut}) => {
   let location = useLocation();
 
   useEffect(() => {
+    try {
+      var s = localStorage.getItem("perms");
+      if (s) {
+        s = JSON.parse(s);
+        setPerms(s);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
+
+  useEffect(() => {
     const debouncedHandleResize = debounce((width, height) => {
       const header = document.querySelector('.MuiToolbar-root');
       const body = formRef.current;
-      body.style.height = (height - header.offsetHeight*0) + 'px';
+      if (body)
+        body.style.height = (height - header.offsetHeight * 0) + 'px';
     });
     debouncedHandleResize();
     window.addEventListener('resize', debouncedHandleResize)
     return _ => {
       window.removeEventListener('resize', debouncedHandleResize)
     }
-  }, [location,mobileOpen]);
-
-
-  const [openConfirm, setOpenConfirm] = React.useState(false);
-
-  const [openSnack, setOpenSnack] = React.useState(false);
-
-  const handleCloseConfirm = () => {
-    setOpenConfirm(false);
-  };
+  }, [location]);
 
   const drawerWidth = 240;
-  const theme = createTheme({
-    components: {
-      // Name of the component ⚛️
-      MuiInput: {
-        defaultProps: {
-          required: true
-        }
-      },
-    },
-  });
 
   const formRef = React.createRef();
 
   let navigate = useNavigate();
-  const DisabledQuizList = lazyLoader(() => import('./disabledQuiz/List'));
-  const DisabledQuizForm = lazyLoader(() => import('./disabledQuiz/Form')
+
+  const ChartPanel = lazyLoader(() => import('./screens/Charts'));
+
+  const MapPanel = lazyLoader(() => import('./screens/Map'));
+
+  const DisabledQuizList = lazyLoader(() => import('./screens/disabledQuiz/List'));
+
+  const DisabledQuizForm = lazyLoader(() => import('./screens/disabledQuiz/Form')
     .then(module => ({ default: module.Form }))
   );
+
+  const UserList = lazyLoader(() => import('./screens/user/List'));
+
+  const PivotTable = lazyLoader(() => import('./screens/disabledQuiz/PivotTable'));
+
+  const UserForm = lazyLoader(() => import('./screens/user/Form')
+    .then(module => ({ default: module.Form }))
+  );
+
+  const ProfileForm = lazyLoader(() => import('./screens/Profile')
+    .then(module => ({ default: module.Form }))
+  );
+
+  const SettingForm = lazyLoader(() => import('./screens/Setting')
+    .then(module => ({ default: module.Form }))
+  );
+
 
   return (
     <Box
       sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
+      <VAppBar
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
@@ -158,29 +245,22 @@ const HomePage = ({logOut}) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Cuestionarios Discapacidad
+            {title}
           </Typography>
         </Toolbar>
-      </AppBar>
+      </VAppBar>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
         aria-label="mailbox folders"
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
+        <VDrawer
+
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
+          width={drawerWidth}
         >
           {drawer}
-        </Drawer>
+        </VDrawer>
         <Drawer
           variant="permanent"
           sx={{
@@ -198,46 +278,21 @@ const HomePage = ({logOut}) => {
       >
         <Toolbar className="_" />
         <Routes>
-          <Route index element={<DisabledQuizList />} />
+          <Route index element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
           <Route path={`/create`} element={<DisabledQuizForm />} />
+          <Route path={`/:pid/edit`} element={<DisabledQuizForm />} />
+          <Route path={`/user`} element={<UserList setO={setO} />} />
+          <Route path={`/user/create`} element={<UserForm />} />
+          <Route path={`/user/:uid/edit`} element={<UserForm />} />
+          <Route path={`/charts`} element={<ChartPanel />} />
+          <Route path={`/map`} element={<MapPanel />} />
+          <Route path={`/setting`} element={<SettingForm />} />
+          <Route path={`/profile`} element={<ProfileForm />} />
+          <Route path={`/pivot`} element={<PivotTable />} />
         </Routes>
       </Box>
 
-      <Dialog
-        open={openConfirm}
-        onClose={handleCloseConfirm}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Use Google's location service?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Eliminar
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseConfirm}>Cancelar</Button>
-          <Button onClick={() => {
-            setOpenConfirm(false);
-            setOpenSnack(true);
-
-          }} autoFocus>
-            Si
-          </Button>
-        </DialogActions>
-
-      </Dialog>
-      <Snackbar open={openSnack} autoHideDuration={3000} onClose={() => {
-        setOpenSnack(false);
-      }}>
-        <Alert onClose={() => {
-          setOpenSnack(false);
-        }} severity="success" sx={{ width: '100%' }}>
-          This is a success message!
-        </Alert>
-      </Snackbar>
+      <VSnackbar />
     </Box>
   );
 

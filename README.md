@@ -73,3 +73,19 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 https://spin.atomicobject.com/2022/02/10/version-fastlane/
 https://www.runway.team/blog/how-to-build-the-perfect-fastlane-pipeline-for-android#incrementing-version-code
 https://www.raywenderlich.com/26869030-fastlane-tutorial-for-android-getting-started
+
+
+E:\projects\python\flask_oauth2_server\run.bat
+npm install -g cordova-res
+
+resources/
+├── icon.png
+└── splash.png
+Next, run the following to generate all images then copy them into the native projects:
+
+cordova-res ios --skip-config --copy
+cordova-res android --skip-config --copy
+
+npm install @capacitor/geolocation
+npx cap sync
+

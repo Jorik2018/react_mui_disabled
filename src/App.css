@@ -8,6 +8,15 @@
 }
 .MuiListItemIcon-root{
   min-width: 30px !important;
+
+}
+.MuiTableCell-head{
+
+padding: 5px;
+}
+.MuiTableCell-head input{
+background-color:white;
+padding: 5px 10px;
 }
 
 .MuiInput-input,.MuiFormControl-root {
@@ -15,7 +24,9 @@
   width: -webkit-fill-available;
   margin: 20px 0px 0px !important;
 }
-
+.MuiTableCell-head .MuiTextField-root{
+margin-top: 5px !important;
+}
 .noMarginTop.MuiInput-input,.noMarginTop.MuiFormControl-root {
   margin-top: 0px !important;
 }
@@ -66,4 +77,12 @@ textarea{
 .button-login{
   background: 
   #b10000 -webkit-gradient(linear,left top,left bottom,from(rgba(245, 111, 111, 0.8)),to(rgba(255,255,255,0)))
+}
+
+.MuiAccordionSummary-root{
+  background-color: black !important;
+  color: white !important;
+}
+.MuiAccordionSummary-root svg{
+  color: white;
 }

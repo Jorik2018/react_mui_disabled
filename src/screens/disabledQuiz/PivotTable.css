@@ -1,0 +1,9 @@
+.pvtRowOrder,.pvtColOrder{
+    float: left;
+  }
+  .pvtDropdown,.pvtDropdownValue{
+    width: -webkit-fill-available;
+  }
+  .pvtAxisContainer{
+    height: 32px;
+  }
