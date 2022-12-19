@@ -56,10 +56,6 @@ const List = () => {
 
   const isSelected = (code) => selected.indexOf(code) !== -1;
 
-  const friends = useLiveQuery(
-    () => db.disabled.toArray()
-  );
-
   const networkStatus = useSelector((state) => state.networkStatus);
 
   const onChangeAllRow = (event) => {
@@ -139,7 +135,7 @@ const List = () => {
     fetchData(0) 
   }, []);
 
-  const [o, { defaultProps, handleChange, bindEvents, validate, set }] = useFormState(useState, {}, {});
+  const [o, { defaultProps }] = useFormState(useState, {}, {});
 
   const createOnClick = () => {
     navigate('/create');
@@ -225,7 +221,7 @@ const List = () => {
               const isItemSelected = isSelected(toID(row));
               return (
                 <StyledTableRow
-                  style={{backgroundColor:(row._id&&row._id.$oid)?'':(index%2==0?'#f1f19c':'#ffffbb')}}
+                  style={{backgroundColor:(row._id&&row._id.$oid)?'':(index%2===0?'#f1f19c':'#ffffbb')}}
                   hover
                   onClick={(event) => onClickRow(event, toID(row))}
                   role="checkbox"

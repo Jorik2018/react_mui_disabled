@@ -10,10 +10,9 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Accordion, AccordionDetails, InputLabel, Input, IconButton,
-  Box, Button, Checkbox, Fab, FormHelperText,InputAdornment,
-  FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
-  RadioGroup, Stack, TextField
+  Accordion, AccordionDetails, IconButton,
+  Box, Button, Checkbox, Fab, InputAdornment,
+  FormControl, FormControlLabel, FormGroup, FormLabel, Radio, Stack, TextField
 } from '@mui/material';
 import {
   useNavigate, useParams, useLocation
@@ -24,9 +23,7 @@ import { useDispatch } from "react-redux";
 export const Form = () => {
 
   const dispatch = useDispatch();
-
-  const location = useLocation();
-
+  
   const { uid } = useParams();
 
   const formRef = createRef();
