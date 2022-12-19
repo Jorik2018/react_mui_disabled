@@ -15,7 +15,7 @@ import { db } from './db';
 
 
 
-http.baseURL = process.env.REACT_APP_API;
+http.baseURL = process.env.REACT_APP_BASE_URL;
 
 function counterReducer(state = {title:'',networkStatus:{},drawer:false, url:null,load: false, snack: null, cb: null, dialog: null, result: null }, action) {
 
