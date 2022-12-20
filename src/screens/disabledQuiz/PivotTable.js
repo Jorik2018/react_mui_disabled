@@ -44,14 +44,14 @@ const List = (props) => {
         var table = document.createElement("table");
         table.setAttribute('width', '100%');
         pt = [].filter.call(pt, (e, c) => {
-          if (c == 0) {
+          if (c === 0) {
             var table = document.createElement("table");
             var tr = document.createElement("tr");
             tr.appendChild(e);
             table.appendChild(tr);
             table.setAttribute('width', '100%');
             tableContainer.insertBefore(table, tableContainer.firstChild);
-          } else if (c == pt.length - 1) {
+          } else if (c === pt.length - 1) {
             
             mo.observe(e,{childList: true});
             mo.disconnect();
@@ -62,7 +62,7 @@ const List = (props) => {
         }).forEach((e, i) => {
           var tr = document.createElement("tr");
           tr.appendChild(e);
-          if (i == 1) {
+          if (i === 1) {
             table.insertBefore(tr, table.firstChild);
           } else
             table.appendChild(tr);

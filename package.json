@@ -46,7 +46,7 @@
     "zod": "^3.18.0"
   },
   "scripts": {
-    "start": "CI=true && react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "apk": "cls && npm install gra-react-utils@latest --force && npm run build & npx cap copy & cd android & gradlew build & cd .. & start android\\app\\build\\outputs\\apk\\release ",
     "update_start": "npm install gra-react-utils@latest --force && react-scripts start",

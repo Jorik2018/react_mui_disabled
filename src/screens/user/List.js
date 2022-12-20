@@ -146,9 +146,9 @@ const List = () => {
     }
 
     
-  }, []);
+  }, [dispatch]);
 
-  useEffect(() => { fetchData(0) }, []);
+  useEffect(() => { fetchData(0) }, [fetchData]);
 
   const onClickCreate = () => {
     navigate('/user/create');

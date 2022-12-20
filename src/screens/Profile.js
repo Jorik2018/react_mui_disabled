@@ -11,10 +11,8 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Accordion, AccordionDetails, AccordionSummary, Input, IconButton,
-  Box, Button, Checkbox, Fab, InputAdornment,
-  FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
-  RadioGroup, Stack, TextField
+  Accordion, AccordionDetails, AccordionSummary,
+  Box, Button, Checkbox, Fab, FormControlLabel, Radio, TextField
 } from '@mui/material';
 import {
   useNavigate, useParams, useLocation
@@ -76,26 +74,14 @@ export const Form = () => {
     if (formRef.current) {
       const header = document.querySelector('.MuiToolbar-root');
       const [body, toolBar] = formRef.current.children;
-      const nav = document.querySelector('nav');
       body.style.height = (height - header.offsetHeight - 0) + 'px';
       //toolBar.style.width = (width - nav.offsetWidth) + 'px';
     }
   }, [width, height]);
 
-  const cancelOnClick = () => {
-    navigate(-1);
-  }
-
   const onClickAdd = () => {
     navigate('/user/create', { replace: true });
   }
-
-  const searchPeopleOnClick = () => {
-    http.post('/api/reniec', { code: o.people.code }, (h) => { delete h['Authorization']; return h; }).then((data) => {
-      console.log(data);
-    });
-  }
-
 
   const onClickChangePassword = () => {
     console.log(o);
@@ -245,7 +231,7 @@ export const Form = () => {
               />
               <div style={{ paddingTop: 10, textAlign: 'right' }}>
                 <Button variant="contained"
-                  disabled={!o.current || !o.new || !o.confirm || o.confirm != o.new}
+                  disabled={!o.current || !o.new || !o.confirm || o.confirm !== o.new}
                   onClick={onClickChangePassword} color="primary" endIcon={<SaveIcon />}>
                   Grabar
                 </Button>

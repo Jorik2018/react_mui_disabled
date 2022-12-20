@@ -28,8 +28,6 @@ export const Form = () => {
 
   const networkStatus = useSelector((state) => state.networkStatus);
 
-  const location = useLocation();
-
   const { pid } = useParams();
 
   const formRef = createRef();
@@ -41,8 +39,6 @@ export const Form = () => {
   const [provinces, setProvinces] = useState([]);
 
   const [districts, setDistricts] = useState([]);
-
-  const [search, setSearch] = useState(null);
 
   const [old, setOld] = useState(null);
 

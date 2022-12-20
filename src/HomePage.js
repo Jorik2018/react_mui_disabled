@@ -95,7 +95,7 @@ const HomePage = ({ logOut }) => {
       ]
     },
     {
-      text: 'Configuración', icon: <SettingsIcon />, path: '/setting'
+      text: 'Configuración'+process.env.PUBLIC_URL, icon: <SettingsIcon />, path: '/setting'
     },
     {
       text: 'Mi cuenta', icon: <AccountCircleIcon />, path: '/profile'
