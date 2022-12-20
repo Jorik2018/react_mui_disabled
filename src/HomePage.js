@@ -146,7 +146,7 @@ const HomePage = ({ logOut ,match }) => {
               <ListItem key={'List_' + index0 + '_' + index} disablePadding style={{ paddingLeft: '40px' }}>
                 <ListItemButton onClick={item.onClick ? item.onClick : () => {
                   handleDrawerToggle();
-                  navigate(process.env.PUBLIC_URL+item.path);
+                  navigate(item.path);
                 }}>
                   <ListItemIcon>
                     {item.icon || <MailIcon />}
