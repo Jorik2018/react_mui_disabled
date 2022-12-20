@@ -151,7 +151,7 @@ const HomePage = ({ logOut }) => {
                   <ListItemIcon>
                     {item.icon || <MailIcon />}
                   </ListItemIcon>
-                  <ListItemText primary={item.text} />
+                  <ListItemText primary={process.env.PUBLIC_URL+item.text} />
 
                 </ListItemButton>
               </ListItem>
