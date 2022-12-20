@@ -27,7 +27,7 @@ function VDialog() {
   const dispatch = useDispatch();
 
 
-  
+
   function onClose(e) {
     const el = e.target;
     let index;
@@ -61,7 +61,7 @@ function App() {
 
   const { token, setToken, logOut } = useToken();
 
-  
+
 
   const dispatch = useDispatch();
 
@@ -69,30 +69,30 @@ function App() {
     () => db.disabled.toArray()
   );
 
-  const syncronize=()=>{
-    if(disableds){
-        setTimeout(async () => {
-          var data=disableds;
-          for(var i=0;i<data.length;i++){
-              //console.log(data[i]);
-              //var result=await http.get('https://randomuser.me/api/');
-             // console.log(result);
-          }
-        }, 1000);
-      }
+  const syncronize = () => {
+    if (disableds) {
+      setTimeout(async () => {
+        var data = disableds;
+        for (var i = 0; i < data.length; i++) {
+          //console.log(data[i]);
+          //var result=await http.get('https://randomuser.me/api/');
+          // console.log(result);
+        }
+      }, 1000);
+    }
   }
 
-  Network.addListener('networkStatusChange',status => {
+  Network.addListener('networkStatusChange', status => {
     console.log(status);
-    dispatch({type:'networkStatus',status:status});
-    if(status.connected){
+    dispatch({ type: 'networkStatus', status: status });
+    if (status.connected) {
       syncronize();
     }
   });
-  
-  Network.getStatus().then((status)=>{
-    dispatch({type:'networkStatus',status:status});
-    if(status.connected){
+
+  Network.getStatus().then((status) => {
+    dispatch({ type: 'networkStatus', status: status });
+    if (status.connected) {
       syncronize();
     }
   });;
@@ -129,9 +129,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <div className="App">
-        <Router path={process.env.PUBLIC_URL}  >
-          <HomePage logOut={logOut} />
-        </Router>
+        <Route path={process.env.PUBLIC_URL}
+          render={(props) => {
+            return <HomePage logOut={logOut} {...props} />;
+          }}
+        >
+        </Route>
         <VDialog />
       </div>
     </ThemeProvider>

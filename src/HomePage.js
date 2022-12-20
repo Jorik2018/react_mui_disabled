@@ -74,7 +74,7 @@ function VAppBar(props) {
 
 }
 
-const HomePage = ({ logOut }) => {
+const HomePage = ({ logOut ,match }) => {
 
   const [o, setO] = React.useState({ title: 'Cuestionarios Discapacidad' });
 
@@ -278,17 +278,17 @@ const HomePage = ({ logOut }) => {
       >
         <Toolbar className="_" />
         <Routes>
-          <Route index element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
-          <Route path={`/create`} element={<DisabledQuizForm />} />
-          <Route path={`/:pid/edit`} element={<DisabledQuizForm />} />
-          <Route path={`/user`} element={<UserList setO={setO} />} />
-          <Route path={`/user/create`} element={<UserForm />} />
-          <Route path={`/user/:uid/edit`} element={<UserForm />} />
-          <Route path={`/charts`} element={<ChartPanel />} />
-          <Route path={`/map`} element={<MapPanel />} />
-          <Route path={`/setting`} element={<SettingForm />} />
-          <Route path={`/profile`} element={<ProfileForm />} />
-          <Route path={`/pivot`} element={<PivotTable />} />
+          <Route path={`${match.url}`} element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
+          <Route path={`${match.url}/create`} element={<DisabledQuizForm />} />
+          <Route path={`${match.url}/:pid/edit`} element={<DisabledQuizForm />} />
+          <Route path={`${match.url}/user`} element={<UserList setO={setO} />} />
+          <Route path={`${match.url}/user/create`} element={<UserForm />} />
+          <Route path={`${match.url}/user/:uid/edit`} element={<UserForm />} />
+          <Route path={`${match.url}/charts`} element={<ChartPanel />} />
+          <Route path={`${match.url}/map`} element={<MapPanel />} />
+          <Route path={`${match.url}/setting`} element={<SettingForm />} />
+          <Route path={`${match.url}/profile`} element={<ProfileForm />} />
+          <Route path={`${match.url}/pivot`} element={<PivotTable />} />
         </Routes>
       </Box>
 
