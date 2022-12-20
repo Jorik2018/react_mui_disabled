@@ -223,7 +223,7 @@ const HomePage = ({ logOut ,match }) => {
     .then(module => ({ default: module.Form }))
   );
 
-  var path=process.env.PUBLIC_URL;
+
   return (
     <Box
       sx={{ display: 'flex' }}>
@@ -278,17 +278,17 @@ const HomePage = ({ logOut ,match }) => {
       >
         <Toolbar className="_" />
         <Routes>
-          <Route path={`${path}`} element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
-          <Route path={`${path}/create`} element={<DisabledQuizForm />} />
-          <Route path={`${path}/:pid/edit`} element={<DisabledQuizForm />} />
-          <Route path={`${path}/user`} element={<UserList setO={setO} />} />
-          <Route path={`${path}/user/create`} element={<UserForm />} />
-          <Route path={`${path}/user/:uid/edit`} element={<UserForm />} />
-          <Route path={`${path}/charts`} element={<ChartPanel />} />
-          <Route path={`${path}/map`} element={<MapPanel />} />
-          <Route path={`${path}/setting`} element={<SettingForm />} />
-          <Route path={`${path}/profile`} element={<ProfileForm />} />
-          <Route path={`${path}/pivot`} element={<PivotTable />} />
+          <Route index element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
+          <Route path={`/create`} element={<DisabledQuizForm />} />
+          <Route path={`${match.url}/:pid/edit`} element={<DisabledQuizForm />} />
+          <Route path={`${match.url}/user`} element={<UserList setO={setO} />} />
+          <Route path={`${match.url}/user/create`} element={<UserForm />} />
+          <Route path={`${match.url}/user/:uid/edit`} element={<UserForm />} />
+          <Route path={`${match.url}/charts`} element={<ChartPanel />} />
+          <Route path={`${match.url}/map`} element={<MapPanel />} />
+          <Route path={`${match.url}/setting`} element={<SettingForm />} />
+          <Route path={`/profile`} element={<ProfileForm />} />
+          <Route path={`/pivot`} element={<PivotTable />} />
         </Routes>
       </Box>
 
