@@ -133,7 +133,7 @@ const HomePage = ({ logOut ,match }) => {
             <ListItem>
               <ListItemButton onClick={item.onClick ? item.onClick : () => {
                 handleDrawerToggle();
-                navigate(process.env.PUBLIC_URL+item.path);
+                navigate(item.path);
               }}>
                 <ListItemIcon>
                   {item.icon || <MailIcon />}
