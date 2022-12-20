@@ -280,15 +280,15 @@ const HomePage = ({ logOut ,match }) => {
         <Routes>
           <Route path={`${path}`} element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
           <Route path={`${path}/create`} element={<DisabledQuizForm />} />
-          <Route path={`${match.url}/:pid/edit`} element={<DisabledQuizForm />} />
+          <Route path={`${path}/:pid/edit`} element={<DisabledQuizForm />} />
           <Route path={`${path}/user`} element={<UserList setO={setO} />} />
           <Route path={`${path}/user/create`} element={<UserForm />} />
           <Route path={`${path}/user/:uid/edit`} element={<UserForm />} />
-          <Route path={`${match.url}/charts`} element={<ChartPanel />} />
-          <Route path={`${match.url}/map`} element={<MapPanel />} />
-          <Route path={`${match.url}/setting`} element={<SettingForm />} />
-          <Route path={`${match.url}/profile`} element={<ProfileForm />} />
-          <Route path={`${match.url}/pivot`} element={<PivotTable />} />
+          <Route path={`${path}/charts`} element={<ChartPanel />} />
+          <Route path={`${path}/map`} element={<MapPanel />} />
+          <Route path={`${path}/setting`} element={<SettingForm />} />
+          <Route path={`${path}/profile`} element={<ProfileForm />} />
+          <Route path={`${path}/pivot`} element={<PivotTable />} />
         </Routes>
       </Box>
 
