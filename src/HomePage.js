@@ -133,7 +133,7 @@ const HomePage = ({ logOut }) => {
             <ListItem>
               <ListItemButton onClick={item.onClick ? item.onClick : () => {
                 handleDrawerToggle();
-                navigate(item.path);
+                navigate(process.env.PUBLIC_URL+item.path);
               }}>
                 <ListItemIcon>
                   {item.icon || <MailIcon />}
@@ -151,7 +151,7 @@ const HomePage = ({ logOut }) => {
                   <ListItemIcon>
                     {item.icon || <MailIcon />}
                   </ListItemIcon>
-                  <ListItemText primary={process.env.PUBLIC_URL+item.text} />
+                  <ListItemText primary={item.text} />
 
                 </ListItemButton>
               </ListItem>
