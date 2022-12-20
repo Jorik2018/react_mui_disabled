@@ -129,7 +129,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <div className="App">
-        <Router>
+        <Router path={process.env.PUBLIC_URL}  >
           <HomePage logOut={logOut} />
         </Router>
         <VDialog />
