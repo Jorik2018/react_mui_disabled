@@ -7,7 +7,7 @@ import {
   TableHead, TableBody,TablePagination, TableRow, TableContainer, Toolbar
 } from '@mui/material';
 import { Autorenew } from '@mui/icons-material';
-import { debounce, http } from 'gra-react-utils';
+import { http, useResize, useFormState } from 'gra-react-utils';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +39,9 @@ const List = () => {
 
   const navigate = useNavigate();
 
-  const [state, setState] = useState({page: 0, rowsPerPage:10});
+  const [o, { defaultProps }] = useFormState(useState, {name:''}, {});
+
+  const [state, setState] = useState({page: 0, rowsPerPage:50});
 
   const [result, setResult] = useState({size: 0, data: [] });
 
@@ -75,19 +77,15 @@ const List = () => {
   };
 
   const onPageChange = (
-    event,
+    event,page
   ) => {
-    console.log(event);
+    setState({...state,page:page});
   };
 
   const onRowsPerPageChange = (
-    event,
+    event
   ) => {
-    var s={...state,...{rowsPerPage:parseInt(event.target.value, 10)}};
-    console.log(s);
-    setState(s);
-    fetchData(0);
-    //setState({...state,...{page:0}});
+    setState({...state,rowsPerPage:event.target.value});
   };
 
   const onClickRefresh = () => {
@@ -98,7 +96,7 @@ const List = () => {
   const fetchData = async (page) => {
     const data = {
       query: `query{
-          users(offset:${page*state.rowsPerPage} limit:${state.rowsPerPage} roleName:"") {
+          users(offset:${page*state.rowsPerPage} limit:${state.rowsPerPage} roleName:"" name:"${o.name||''}" fullName:"${o.fullName||''}") {
             data{
               uid
               name
@@ -114,19 +112,16 @@ const List = () => {
         }`,
     };
     http.gql('/api/admin/graphql', data).then((result)=>{
-      console.log(result);
       if(result&&result.users){
         setResult(result.users);
-        /*var s={...state,...{page:page}};
-        console.log(s);
-        setState(s);*/
       }
     });
 
   };
 
+  const { height, width } = useResize(React);
+
   useEffect(() => {
-    const debouncedHandleResize = debounce((width, height) => {
       const header = document.querySelector('.MuiToolbar-root');
       const tableContainer = document.querySelector('.MuiTableContainer-root');
       const tablePagination = document.querySelector('.MuiTablePagination-root');
@@ -137,18 +132,12 @@ const List = () => {
         tableContainer.style.height = (height - header.offsetHeight
           - toolbarTable.offsetHeight-tablePagination.offsetHeight) + 'px';
       }
-    }, 500);
-    debouncedHandleResize();
-    window.addEventListener('resize', debouncedHandleResize);
+  }, [height, width]);
+
+  useEffect(() => { 
     dispatch({type:'title',title:'Usuarios'});
-    return _ => {
-      window.removeEventListener('resize', debouncedHandleResize)
-    }
-
-    
-  }, [dispatch]);
-
-  useEffect(() => { fetchData(0) }, [fetchData]);
+    fetchData(state.page) 
+  }, [state.page,state.rowsPerPage]);
 
   const onClickCreate = () => {
     navigate('/user/create');
@@ -164,7 +153,7 @@ const List = () => {
     dispatch({
       type: "confirm", msg: 'Esta seguro de eliminar el registro seleccionado?', cb: (e) => {
         if (e) {
-          http.delete('/api/minsa/disabled-quiz/' + selected.join(',')).then((result) => {
+          http.delete('/api/admin/user/' + selected.join(',')).then((result) => {
             dispatch({ type: 'snack', msg: 'Registro' + (selected.length > 1 ? 's' : '') + ' eliminado!' });
             onClickRefresh();
           });
@@ -179,7 +168,7 @@ const List = () => {
     return num;
   }
 
-  const emptyRows = state.page > 0 ? Math.max(0, (1 + state.page) * state.rowsPerPage - result.rows.length) : 0;
+  const emptyRows = result.data&&result.data.length;
 
   return (
     <>
@@ -221,10 +210,10 @@ const List = () => {
                 <TextField style={{ padding: 0, marginTop: '5px !important' }} />
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 90 }}>Nombre
-                <TextField style={{ padding: 0, marginTop: '5px !important' }} />
+                <TextField {...defaultProps('name')} style={{ padding: 0, marginTop: '5px !important' }} />
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 260 }}>Nombre Completo
-                <TextField style={{ padding: 0, marginTop: '5px !important' }} />
+                <TextField {...defaultProps('fullName')} style={{ padding: 0, marginTop: '5px !important' }} />
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 260 }}>Correo 
                 <TextField style={{ padding: 0, marginTop: '5px !important' }} />
@@ -232,10 +221,8 @@ const List = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {(result && result.data ? (state.rowsPerPage > 0
-              ? result.data.slice(state.page * state.rowsPerPage, state.page * state.rowsPerPage + state.rowsPerPage)
-              : result.data) : []
-            ).map((row, index) => {
+            {(result && result.data&&result.data.length ? result.data : [])
+            .map((row, index) => {
               const isItemSelected = isSelected(row.uid);
               return (
                 <StyledTableRow
@@ -268,9 +255,11 @@ const List = () => {
                 </StyledTableRow >
               );
             })}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={3} />
+            {(!emptyRows)&&(
+              <TableRow style={{ height: 53 }}>
+                <TableCell colSpan={5} >
+                  No data
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -285,7 +274,7 @@ const List = () => {
           rowsPerPage={state.rowsPerPage}
           page={state.page}
           onPageChange={onPageChange}
-          onRowsPerPageChange={onRowsPerPageChange}
+          onRowsPerPageChange ={onRowsPerPageChange}
         />
       
     </>

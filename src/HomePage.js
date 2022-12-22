@@ -17,7 +17,7 @@ import {
   ListItemButton, ListItemIcon, ListItemText, Snackbar, Toolbar,
   Typography
 } from '@mui/material';
-import { debounce, http } from 'gra-react-utils';
+import { debounce } from 'gra-react-utils';
 import lazyLoader from "./utils/LazyLoader";
 
 import {
@@ -76,7 +76,7 @@ function VAppBar(props) {
 
 const HomePage = ({ logOut ,match }) => {
 
-  const [o, setO] = React.useState({ title: 'Cuestionarios Discapacidad' });
+  const setO= React.useState({ title: 'Cuestionarios Discapacidad' })[1];
 
   const [perms, setPerms] = React.useState([]);
 
@@ -177,6 +177,8 @@ const HomePage = ({ logOut ,match }) => {
     }
   }, []);
 
+  const formRef = React.createRef();
+
   useEffect(() => {
     const debouncedHandleResize = debounce((width, height) => {
       const header = document.querySelector('.MuiToolbar-root');
@@ -189,11 +191,9 @@ const HomePage = ({ logOut ,match }) => {
     return _ => {
       window.removeEventListener('resize', debouncedHandleResize)
     }
-  }, [location]);
+  }, [location,formRef]);
 
   const drawerWidth = 240;
-
-  const formRef = React.createRef();
 
   let navigate = useNavigate();
 

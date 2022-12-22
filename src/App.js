@@ -111,10 +111,10 @@ function App() {
         scope: ''
       });
       const accessToken = gapi.auth.getToken();
-      //console.log(accessToken);
+      console.log(accessToken);
     };
     gapi.load('client:auth2', initClient);
-  }, []);
+  }, [dispatch]);
 
   if (!token) {
     return <><Login setToken={setToken} /><VDialog /></>

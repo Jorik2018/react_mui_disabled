@@ -98,7 +98,9 @@ export const Login = function ({ setToken }) {
     let location = new URL(url||window.location);
     let urlParams = new URLSearchParams(location.search);
     const code = urlParams.get('code');
+    console.log('useEffect',location);
     if (code){
+
       http.post('/api/auth/token', code,()=>{return {'Content-Type':'*/*'}}).then((data) => {
        if (data.error) {
           setMsg(JSON.stringify(data.error));
@@ -111,6 +113,7 @@ export const Login = function ({ setToken }) {
           urlParams.delete('code');
           let q = urlParams.toString();
           q = q && ('?' + q);
+          console.log(location.protocol + '//' + location.host + location.pathname + q);
           window.location.replace(location.protocol + '//' + location.host + location.pathname + q);
         }
       });

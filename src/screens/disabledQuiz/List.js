@@ -4,13 +4,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { db } from '../../db';
 import {
-  Button, Checkbox, Fab, styled, Table, TableCell, TextField,
+  Button, Checkbox, Fab, styled, Table, TableCell, TextField,TablePagination,
   TableHead, TableBody, TableRow, TableContainer, Toolbar
 } from '@mui/material';
 import { Autorenew } from '@mui/icons-material';
-import { http ,useResize,useFormState} from 'gra-react-utils';
+import { http, useResize, useFormState } from 'gra-react-utils';
 import { tableCellClasses } from '@mui/material/TableCell';
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useNavigate
 } from "react-router-dom";
@@ -44,9 +44,7 @@ const List = () => {
 
   const [page, setPage] = useState(0);
 
-  const [state, setState] = useState({ page: 0 });
-
-  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [state, setState] = useState({ page: 0, rowsPerPage: 50 });
 
   const [result, setResult] = useState({ size: 0, data: [] });
 
@@ -67,7 +65,7 @@ const List = () => {
 
   const onClickRow = (event, code) => {
     const selectedIndex = selected.indexOf(code);
-    
+
     let newSelected = [];
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, code);
@@ -84,14 +82,18 @@ const List = () => {
     setSelected(newSelected);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - result.rows.length) : 0;
+  const emptyRows = result.data && result.data.length;
 
-  const handleChangeRowsPerPage = (
-    event,
+  const onPageChange = (
+    event, page
   ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    fetchData(0);
-    setPage(0);
+    setState({ ...state, page: page });
+  };
+
+  const onRowsPerPageChange = (
+    event
+  ) => {
+    setState({ ...state, rowsPerPage: event.target.value });
   };
 
   const onClickRefresh = () => {
@@ -100,38 +102,40 @@ const List = () => {
   }
 
   const fetchData = async (page) => {
-    var f=await db.disabled.toArray();
-    var data={data:f?f:[]};
-    if(networkStatus.connected){
-      
-      const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + rowsPerPage
-      +'?' + new URLSearchParams(o).toString()
+    var f = await db.disabled.toArray();
+    var data = { data: f ? f : [] };
+    if (networkStatus.connected) {
+
+      const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
+        + '?' + new URLSearchParams(o).toString()
       );
-      data.size=result.size;
-      data.data=data.data.concat(result.data);
+      data.size = result.size;
+      data.data = data.data.concat(result.data);
     }
     setResult(data);
     setState({ page: page });
   };
 
-  const {height,width} = useResize(React);
+  const { height, width } = useResize(React);
 
   useEffect(() => {
-      const header = document.querySelector('.MuiToolbar-root');
-      const tableContainer = document.querySelector('.MuiTableContainer-root');
-      const nav = document.querySelector('nav');
-      const toolbarTable = document.querySelector('.Toolbar-table');
-      if (tableContainer) {
-        tableContainer.style.width = (width - nav.offsetWidth) + 'px';
-        tableContainer.style.height = (height - header.offsetHeight
-          - toolbarTable.offsetHeight) + 'px';
-      }
-  }, [height,width]);
+    const header = document.querySelector('.MuiToolbar-root');
+    const tableContainer = document.querySelector('.MuiTableContainer-root');
+    const nav = document.querySelector('nav');
+    const toolbarTable = document.querySelector('.Toolbar-table');
+    const tablePagination = document.querySelector('.MuiTablePagination-root');
+      
+    if (tableContainer) {
+      tableContainer.style.width = (width - nav.offsetWidth) + 'px';
+      tableContainer.style.height = (height - header.offsetHeight
+        - toolbarTable.offsetHeight-tablePagination.offsetHeight) + 'px';
+    }
+  }, [height, width]);
 
   useEffect(() => {
-    dispatch({type:'title',title:'Cuestionarios Discapacidad'});
-    fetchData(0) 
-  }, []);
+    dispatch({ type: 'title', title: 'Cuestionarios Discapacidad' });
+    fetchData(state.page)
+  }, [state.page,state.rowsPerPage]);
 
   const [o, { defaultProps }] = useFormState(useState, {}, {});
 
@@ -148,7 +152,7 @@ const List = () => {
       type: "confirm", msg: 'Esta seguro de eliminar el registro seleccionado?', cb: (e) => {
         if (e) {
           http.delete('/api/minsa/disabled-quiz/' + selected.join(',')).then((result) => {
-            dispatch({type:'snack',msg:'Registro'+(selected.length>1?'s':'')+' eliminado!'});
+            dispatch({ type: 'snack', msg: 'Registro' + (selected.length > 1 ? 's' : '') + ' eliminado!' });
             onClickRefresh();
           });
         }
@@ -156,8 +160,8 @@ const List = () => {
     });
   };
 
-  const toID=(row)=>{
-    return row._id&&row._id.$oid?row._id.$oid:row.id;
+  const toID = (row) => {
+    return row._id && row._id.$oid ? row._id.$oid : row.id;
   }
   return (
     <>
@@ -188,7 +192,7 @@ const List = () => {
                 <Checkbox
                   style={{ color: 'white' }}
                   indeterminate={selected.length > 0 && selected.length < result.data.length}
-                  checked={result&&result.data.length > 0 && selected.length === result.data.length}
+                  checked={result && result.data.length > 0 && selected.length === result.data.length}
                   onChange={onChangeAllRow}
                   inputProps={{
                     'aria-label': 'select all desserts',
@@ -197,11 +201,11 @@ const List = () => {
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 80 }}>DNI
                 <TextField {...defaultProps('code')}
-                style={{ padding: 0, marginTop: '5px !important' }} />
+                  style={{ padding: 0, marginTop: '5px !important' }} />
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 260 }}>Nombre Completo
                 <TextField {...defaultProps('fullName')}
-                style={{ padding: 0, marginTop: '5px !important' }} />
+                  style={{ padding: 0, marginTop: '5px !important' }} />
               </StyledTableCell>
               <StyledTableCell style={{ minWidth: 80 }}>Edad
                 <TextField {...defaultProps('age')} style={{ padding: 0, marginTop: '5px !important' }} />
@@ -212,43 +216,41 @@ const List = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {(result&&result.data?(rowsPerPage> 0
-              ? result.data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              : result.data):[]
-            ).map((row, index) => {
-              const isItemSelected = isSelected(toID(row));
-              return (
-                <StyledTableRow
-                  style={{backgroundColor:(row._id&&row._id.$oid)?'':(index%2===0?'#f1f19c':'#ffffbb')}}
-                  hover
-                  onClick={(event) => onClickRow(event, toID(row))}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  key={index + ' ' + toID(row)}
-                  selected={isItemSelected}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      color="primary"
-                      checked={isItemSelected}
-                    />
-                  </TableCell>
-                  <TableCell style={{ width: 80 }} align="center">
-                    {row.code}
-                  </TableCell>
-                  <TableCell style={{ width: 260 }} >
-                    {row.fullName}
-                  </TableCell>
-                  <TableCell style={{ width: 80 }} align="center">
-                    {row.age}
-                  </TableCell>
-                  <TableCell style={{ width: 260 }}>
-                    {row.address}
-                  </TableCell>
-                </StyledTableRow >
-              );
-            })}
+            {(result && result.data && result.data.length ? result.data : [])
+              .map((row, index) => {
+                const isItemSelected = isSelected(toID(row));
+                return (
+                  <StyledTableRow
+                    style={{ backgroundColor: (row._id && row._id.$oid) ? '' : (index % 2 === 0 ? '#f1f19c' : '#ffffbb') }}
+                    hover
+                    onClick={(event) => onClickRow(event, toID(row))}
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={index + ' ' + toID(row)}
+                    selected={isItemSelected}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        color="primary"
+                        checked={isItemSelected}
+                      />
+                    </TableCell>
+                    <TableCell style={{ width: 80 }} align="center">
+                      {row.code}
+                    </TableCell>
+                    <TableCell style={{ width: 260 }} >
+                      {row.fullName}
+                    </TableCell>
+                    <TableCell style={{ width: 80 }} align="center">
+                      {row.age}
+                    </TableCell>
+                    <TableCell style={{ width: 260 }}>
+                      {row.address}
+                    </TableCell>
+                  </StyledTableRow >
+                );
+              })}
             {emptyRows > 0 && (
               <TableRow style={{ height: 53 * emptyRows }}>
                 <TableCell colSpan={3} />
@@ -257,6 +259,15 @@ const List = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[10, 20, 50]}
+        component="div"
+        count={result.size}
+        rowsPerPage={state.rowsPerPage}
+        page={state.page}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+      />
     </>
   );
 
