@@ -113,7 +113,6 @@ const List = () => {
       data.data = data.data.concat(result.data);
     }
     setResult(data);
-    setState({ page: page });
   };
 
   const { height, width } = useResize(React);
@@ -181,7 +180,7 @@ const List = () => {
           onClick={createOnClick}
           style={{
             position: 'absolute',
-            bottom: 24, right: 24
+            bottom: 72, right: 24
           }}>
           <AddIcon />
         </Fab>
@@ -251,9 +250,11 @@ const List = () => {
                   </StyledTableRow >
                 );
               })}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={3} />
+            {(!emptyRows)&&(
+              <TableRow style={{ height: 53 }}>
+                <TableCell colSpan={5} >
+                  No data
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
