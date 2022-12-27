@@ -132,7 +132,7 @@ const List = () => {
   }, [height, width]);
 
   useEffect(() => {
-    dispatch({ type: 'title', title: 'Cuestionarios Discapacidad' });
+    dispatch({ type: 'title', title: 'Evaluación Discapacidad' });
     fetchData(state.page)
   }, [state.page,state.rowsPerPage]);
 
