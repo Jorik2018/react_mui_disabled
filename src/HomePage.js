@@ -90,8 +90,13 @@ const HomePage = ({ logOut ,match }) => {
 
   const items = [
     {
-      perms:'DISABLED_REGISTER',text: 'Cuestionarios Discapacidad', icon: <QuizIcon />, path: '/', items: [
+      perms:'DISABLED_REGISTER',text: 'Evaluación Discapacidad', icon: <QuizIcon />, path: '/', items: [
         { text: 'Agregar', icon: <AddIcon />, path: '/create' }
+      ]
+    },
+    {
+      perms:'DISABLED_REGISTER',text: 'Registro Discapacidad', icon: <QuizIcon />, path: '/register', items: [
+        { text: 'Agregar', icon: <AddIcon />, path: '/register/create' }
       ]
     },
     {
@@ -207,6 +212,12 @@ const HomePage = ({ logOut ,match }) => {
     .then(module => ({ default: module.Form }))
   );
 
+  const DisabledList = lazyLoader(() => import('./screens/disabled/List'));
+
+  const DisabledForm = lazyLoader(() => import('./screens/disabled/Form')
+    .then(module => ({ default: module.Form }))
+  );
+
   const UserList = lazyLoader(() => import('./screens/user/List'));
 
   const PivotTable = lazyLoader(() => import('./screens/disabledQuiz/PivotTable'));
@@ -281,6 +292,11 @@ const HomePage = ({ logOut ,match }) => {
           <Route index element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
           <Route path={`/create`} element={<DisabledQuizForm />} />
           <Route path={`/:pid/edit`} element={<DisabledQuizForm />} />
+
+          <Route path={`/register`} element={<DisabledList setO={setO} />} />
+          <Route path={`/register/create`} element={<DisabledForm />} />
+          <Route path={`/register/:pid/edit`} element={<DisabledForm />} />
+
           <Route path={`/user`} element={<UserList setO={setO} />} />
           <Route path={`/user/create`} element={<UserForm />} />
           <Route path={`/user/:uid/edit`} element={<UserForm />} />

@@ -274,9 +274,17 @@ export function VRadioGroup({ children, error, label, value, ...other }) {
 }
 
 export default function useToken() {
+  
   const getToken = () => {
     const tokenString = localStorage.getItem('token');
     const userToken = JSON.parse(tokenString);
+    /*if(!userToken){
+      saveToken({
+        token:1234
+      })
+      localStorage.setItem('perms',JSON.stringify({'DISABLED_REGISTER':1}));
+    }*/
+
     return userToken?.token
   };
 
