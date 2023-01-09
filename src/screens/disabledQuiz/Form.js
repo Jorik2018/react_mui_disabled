@@ -7,7 +7,8 @@ import {
   Send as SendIcon,
   Add as AddIcon,
   Room as RoomIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  ContactlessOutlined
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
@@ -16,6 +17,9 @@ import {
   FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
   Stack, InputAdornment, IconButton, TextField
 } from '@mui/material';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {
   useNavigate, useParams, useLocation
 } from "react-router-dom";
@@ -133,14 +137,15 @@ export const Form = () => {
       if(result){
         var no={};
         formCert.set(result);
-        no['fullName']=result.fullName;
+        no['names']=result.names;
+        no['surnames']=result.surnames;
         no['address']=result.address;
         no['search']=o.code;
         no['old']=result._id;
         delete result._id;
         if(result.id){
           no['age']=result.edad;
-          no['disabilityCertificate']='SI';
+          no['disability_certificate']='SI';
         }
         set({...o,...no});
       }
@@ -167,11 +172,8 @@ export const Form = () => {
     navigate('/create', { replace: true });
   }
 
-  const onClickSave = async () => {
-    const form = formRef.current;
-    if (0 || form != null && validate(form)) {
-      
-      var o2 = JSON.parse(JSON.stringify(o));
+  const save=async (o)=>{
+    var o2 = JSON.parse(JSON.stringify(o));
       if (networkStatus.connected) {
         http.post('/api/minsa/disabled-quiz', o2).then(async (result) => {
           dispatch({ type: "snack", msg: 'Registro grabado!' });
@@ -203,9 +205,31 @@ export const Form = () => {
         }
         dispatch({ type: "snack", msg: 'Registro grabado!' });
       }
-    } else {
+  }
+
+  const onClickSave = async () => {
+    const form = formRef.current;
+
+    if (0 || form != null ) {
+
+      
+      if(validate(form)){
+        
+        save(o);
+      }else{
+        dispatch({
+          type: "confirm", msg: 'El formulario esta incompleto. Esta seguro de guardar el registro?', cb: (e) => {
+            if (e) {
+              set({...o,incomplete:true})
+              save(o);
+            }
+          }
+        });    
+      }
+      
+    }/* else {
       dispatch({ type: "alert", msg: 'Falta campos por completar!' });
-    }
+    }*/
   };
 
   /* useEffect(() => {
@@ -239,8 +263,19 @@ export const Form = () => {
     </>
   }
 
+  function onChangeBirthdate(v){
+    var age=o.age;
+    if(v){
+      age=-v.diff(new Date(),'year');
+    }
+    set(o => ({...o,birthdate: v,age:age}),()=>{
+      console.log('after set');
+    });
+  }
+
   function getContent() {
-    return <ThemeProvider theme={theme}>
+    return <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <ThemeProvider theme={theme}>
       <form ref={formRef} onSubmit={onSubmit} style={{ textAlign: 'left' }}>
         <Box style={{ overflow: 'auto' }}>
           <Card >
@@ -258,10 +293,7 @@ export const Form = () => {
                 label="DNI"
                 inputProps={{maxlength: 8, style: { textAlign: 'center' }}}
                 {...defaultProps('code', {
-
                   InputProps:{
-                    
-                    
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
@@ -295,17 +327,35 @@ export const Form = () => {
               </FormGroup>
               </Alert>}
               <TextField
-                label="Apellidos y Nombres"
-                {...defaultProps('fullName')}
+                label="Apellidos"
+                {...defaultProps('surnames')}
                 inputProps={{ maxLength: '50' }}
               />
               <TextField
+                label="Nombres"
+                {...defaultProps('names')}
+                inputProps={{ maxLength: '50' }}
+              />
+                            <MobileDatePicker
+          inputFormat="DD/MM/YYYY"
+          label="Fecha Nacimiento"
+          value={o.birthdate||''}
+          onChange={onChangeBirthdate}
+          renderInput={(params) =>
+             <TextField  {...params} />}
+        />
+              <TextField
+                {...defaultProps("age")}
+                label="Edad"
+                inputProps={ { readOnly: true, }}
+                type="number"
+              />
+              <TextField
+                multiline
                 label="Dirección"
                 {...defaultProps('address')}
                 inputProps={{ maxLength: 250 }}
               />
-
-
               <FormControl>
                 <TextField 
                   label="Geolocación"
@@ -397,11 +447,7 @@ export const Form = () => {
                   </MenuItem>
                 ))}
               </TextField>
-              <TextField
-                {...defaultProps("age")}
-                label="Edad"
-                type="number"
-              />
+
               <TextField
                 {...defaultProps("occupation")}
                 label="Ocupación"
@@ -461,13 +507,37 @@ export const Form = () => {
                 label="Informe Medico"
                 multiline
               />
+               <TextField
+                {...defaultProps("type")}
+                label="Tipo discapacidad"
+                multiline
+                inputProps={ { readOnly: true, }}
+              />
+              <TextField
+                {...defaultProps("other_type")}
+                label="Otro tipo"
+                multiline
+                inputProps={ { readOnly: true, }}
+              />
+              <TextField
+                {...defaultProps("devices")}
+                label="Dispositivos requeridos"
+                multiline
+                inputProps={ { readOnly: true, }}
+              />
               <VRadioGroup
-                {...defaultProps("disabilityCertificate")}
+                {...defaultProps("disability_certificate")}
                 label="¿Tiene certificado de discapacidad?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
               </VRadioGroup>
+              {
+                o.disability_certificate === 'SI' && <TextField
+                  {...defaultProps("nro_certificate")}
+                  label="Numero certificado"
+                />
+              }
               <TextField
                 select
                 {...defaultProps("belongsAssociation")}
@@ -588,14 +658,14 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("b2")}
-                label="¿Puede mover brazos y manos?."
+                label="¿Puede mover brazos y manos?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("b3")}
-                label="¿Tiene ausencia de alguna extremidad del cuerpo?."
+                label="¿Tiene ausencia de alguna extremidad del cuerpo?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -612,7 +682,7 @@ export const Form = () => {
                   </FormGroup>
                   {
                     o.b4_5 === true && <TextField
-                      {...defaultProps("b4_5_e")}
+                      {...defaultProps("b4_5_o")}
                       label="Otro"
                     />
                   }
@@ -627,7 +697,7 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("b6")}
-                label="¿Usa algún despositivo para movilizarse?"
+                label="¿Usa algún dispositivo para movilizarse?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -659,7 +729,7 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("b9")}
-                label="¿Puede desplazarse fuera de su hogar?."
+                label="¿Puede desplazarse fuera de su hogar?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -683,14 +753,14 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("c2")}
-                label="Puede vestirse solo?."
+                label="¿Puede vestirse solo?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("c3")}
-                label="¿Puede lavarse todo el cuerpo, bañarse?."
+                label="¿Puede lavarse todo el cuerpo, bañarse?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -713,7 +783,7 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("d2")}
-                label="¿Se relaciona con personas que no conoce?."
+                label="¿Se relaciona con personas que no conoce?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -742,7 +812,7 @@ export const Form = () => {
               </VRadioGroup>
               <VRadioGroup
                 {...defaultProps("e2")}
-                label="¿Presenta dificultades para trabajar?."
+                label="¿Presenta dificultades para trabajar?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
@@ -872,7 +942,7 @@ export const Form = () => {
           <AddIcon />
         </Fab>}
       </form>
-    </ThemeProvider>
+    </ThemeProvider></LocalizationProvider>
   }
   return <>{
     1 == 1 ? <Box style={{ textAlign: 'left' }}>{getContent()}</Box>

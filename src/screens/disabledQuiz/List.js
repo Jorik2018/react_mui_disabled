@@ -42,6 +42,8 @@ const List = () => {
 
   const navigate = useNavigate();
 
+  const dayjs = require('dayjs');
+
   const [page, setPage] = useState(0);
 
   const [state, setState] = useState({ page: 0, rowsPerPage: 50 });
@@ -105,12 +107,15 @@ const List = () => {
     var f = await db.disabled.toArray();
     var data = { data: f ? f : [] };
     if (networkStatus.connected) {
-
       const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
         + '?' + new URLSearchParams(o).toString()
       );
       data.size = result.size;
       data.data = data.data.concat(result.data);
+      data.data.forEach(r=>{
+        if(r.birthdate)
+        r.age=-dayjs(r.birthdate).diff(new Date(),'year');;
+      });
     }
     setResult(data);
   };
@@ -239,7 +244,7 @@ const List = () => {
                       {row.code}
                     </TableCell>
                     <TableCell style={{ width: 260 }} >
-                      {row.fullName}
+                      {row.surnames} {row.names}
                     </TableCell>
                     <TableCell style={{ width: 80 }} align="center">
                       {row.age}

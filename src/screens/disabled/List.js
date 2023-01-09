@@ -103,7 +103,7 @@ const List = () => {
     var data = { data:  [] };
     if (networkStatus.connected) {
 
-      const result = await http.get('/api/grds/disabled/' + page + '/' + state.rowsPerPage
+      const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
         + '?' + new URLSearchParams(o).toString()
       );
       data.size = result.size;
@@ -147,7 +147,7 @@ const List = () => {
     dispatch({
       type: "confirm", msg: 'Esta seguro de eliminar el registro seleccionado?', cb: (e) => {
         if (e) {
-          http.delete('/api/grds/disabled/' + selected.join(',')).then((result) => {
+          http.delete('/api/minsa/disabled-quiz/' + selected.join(',')).then((result) => {
             dispatch({ type: 'snack', msg: 'Registro' + (selected.length > 1 ? 's' : '') + ' eliminado!' });
             onClickRefresh();
           });

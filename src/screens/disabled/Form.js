@@ -22,6 +22,9 @@ import {
 } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Geolocation } from '@capacitor/geolocation';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 export const Form = () => {
 
@@ -79,7 +82,7 @@ export const Form = () => {
   useEffect(() => {
     if (pid) {
       if (networkStatus.connected) {
-        http.get('/api/grds/disabled/' + pid).then((result) => {
+        http.get('/api/minsa/disabled-quiz/' + pid).then((result) => {
           
             set(result);
         });
@@ -146,13 +149,23 @@ export const Form = () => {
     navigate('/register/create', { replace: true });
   }
 
+  function onChangeBirthdate(v){
+    var age=o.age;
+    if(v){
+      age=-v.diff(new Date(),'year');
+    }
+    set(o => ({...o,birthdate: v,age:age}),()=>{
+      console.log('after set');
+    });
+  }
+
   const onClickSave = async () => {
     const form = formRef.current;
     if (0 || form != null && validate(form)) {
       
       var o2 = JSON.parse(JSON.stringify(o));
       if (networkStatus.connected) {
-        http.post('/api/grds/disabled', o2).then(async (result) => {
+        http.post('/api/minsa/disabled-quiz/', o2).then(async (result) => {
           dispatch({ type: "snack", msg: 'Registro grabado!' });
           if (!o2._id) {
             console.log(o2);
@@ -211,7 +224,7 @@ export const Form = () => {
   }
 
   function getContent() {
-    return <ThemeProvider theme={theme}>
+    return <LocalizationProvider dateAdapter={AdapterDayjs}><ThemeProvider theme={theme}>
       <form ref={formRef} onSubmit={onSubmit} style={{ textAlign: 'left' }}>
         <Box style={{ overflow: 'auto' }}>
           <Accordion expanded={true}>
@@ -270,7 +283,17 @@ export const Form = () => {
                 {...defaultProps('surnames')}
                 inputProps={{ maxLength: '50' }}
               />
+                            <MobileDatePicker
+          inputFormat="DD/MM/YYYY"
+          label="Fecha Nacimiento"
+          value={o.birthdate||''}
+          onChange={onChangeBirthdate}
+          renderInput={(params) =>
+             <TextField  {...params} />}
+        />
+              
               <TextField
+                multiline
                 label="Dirección"
                 {...defaultProps('address')}
                 inputProps={{ maxLength: 250 }}
@@ -343,11 +366,6 @@ export const Form = () => {
                 ))}
               </TextField>
               <TextField
-                {...defaultProps("age")}
-                label="Edad"
-                type="number"
-              />
-              <TextField
                 {...defaultProps("occupation")}
                 label="Ocupación"
               />
@@ -407,7 +425,7 @@ export const Form = () => {
                 multiline
               />
               <VRadioGroup
-                {...defaultProps("disabilityCertificate")}
+                {...defaultProps("disability_certificate")}
                 label="¿Tiene certificado de discapacidad?"
               >
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
@@ -463,6 +481,22 @@ export const Form = () => {
                   />
                 </>
               }
+              <TextField
+                {...defaultProps("type")}
+                label="Tipo discapacidad"
+                multiline
+              />
+              <TextField
+                {...defaultProps("other_type")}
+                label="Otro tipo"
+                multiline
+              />
+              <TextField
+                {...defaultProps("devices")}
+                label="Dispositivos requeridos"
+                multiline
+              />
+              
             </AccordionDetails>
           </Accordion>
         </Box>
@@ -481,7 +515,7 @@ export const Form = () => {
           <AddIcon />
         </Fab>}
       </form>
-    </ThemeProvider>
+    </ThemeProvider></LocalizationProvider>
   }
   return <>{
     1 == 1 ? <Box style={{ textAlign: 'left' }}>{getContent()}</Box>
