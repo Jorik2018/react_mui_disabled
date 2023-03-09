@@ -431,6 +431,13 @@ export const Form = () => {
                 <FormControlLabel value="SI" control={<Radio />} label="SI" />
                 <FormControlLabel value="NO" control={<Radio />} label="NO" />
               </VRadioGroup>
+              {
+                o.disability_certificate === 'SI' && <TextField
+                  {...defaultProps("nro_certificate")}
+                  label="Numero certificado"
+                />
+              }
+              
               <TextField
                 select
                 {...defaultProps("belongsAssociation")}
@@ -482,15 +489,37 @@ export const Form = () => {
                 </>
               }
               <TextField
+                select
                 {...defaultProps("type")}
                 label="Tipo discapacidad"
-                multiline
-              />
+              
+              >
+                {
+                  [
+                    'ALTA',
+                    'MODERADA',
+                    'LEVE'
+                  ].map((e, i) => <MenuItem key={'severity_' + i} value={e}>{e}</MenuItem>)
+                }
+              </TextField>
               <TextField
                 {...defaultProps("other_type")}
                 label="Otro tipo"
                 multiline
               />
+               <TextField
+                select
+                {...defaultProps("severity")}
+                label="Severidad"
+              >
+                {
+                  [
+                    'ALTA',
+                    'MODERADA',
+                    'LEVE'
+                  ].map((e, i) => <MenuItem key={'severity_' + i} value={e}>{e}</MenuItem>)
+                }
+              </TextField>
               <TextField
                 {...defaultProps("devices")}
                 label="Dispositivos requeridos"

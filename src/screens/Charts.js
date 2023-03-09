@@ -1,18 +1,12 @@
-import React, { useRef, useState, useEffect, PureComponent } from 'react';
-import { PieChart, Pie, Area, Cell, AreaChart } from 'recharts';
+import React, { useRef, useState, useEffect } from 'react';
+import { Pie, Area, Cell } from 'recharts';
 import * as Rechart from 'recharts';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-import {CardContent,Card,CardHeader,IconButton,
-  Button, Checkbox, Fab, styled, Table, TableCell, TextField,
-  TableHead, TableBody, TablePagination, TableRow, TableContainer, Toolbar
-} from '@mui/material';
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useResize, http } from 'gra-react-utils';
+import {CardContent,Card,CardHeader,IconButton,} from '@mui/material';
+import { useDispatch } from "react-redux";
+import { useResize } from 'gra-react-utils';
 import Plot from 'react-plotly.js';
-import { blue } from '@mui/material/colors';
 
 const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = Rechart;
 

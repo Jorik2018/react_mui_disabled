@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { db } from '../../db';
 import {
-  Button, Checkbox, Fab, styled, Table, TableCell, TextField,TablePagination,
+  Button, Checkbox, Fab, styled, Table, TableCell, TextField, TablePagination,
   TableHead, TableBody, TableRow, TableContainer, Toolbar
 } from '@mui/material';
 import { Autorenew } from '@mui/icons-material';
@@ -15,7 +15,7 @@ import {
   useNavigate
 } from "react-router-dom";
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
+const HeaderTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
     textAlign: 'center',
@@ -24,6 +24,16 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
   },
+  '& > span': {
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    height: 70,
+    width: 1000
+  },
+  '& .MuiFormControl-root': {
+    padding: 0, marginTop: '5px !important'
+  }
+
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
@@ -33,7 +43,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   // hide last border
   '&:last-child td, &:last-child th': {
     border: 0,
-  },
+  }
 }));
 
 const List = () => {
@@ -80,8 +90,6 @@ const List = () => {
     setSelected(newSelected);
   };
 
-  const emptyRows = result.data && result.data.length;
-
   const onPageChange = (
     event, page
   ) => {
@@ -100,7 +108,7 @@ const List = () => {
   }
 
   const fetchData = async (page) => {
-    var data = { data:  [] };
+    var data = { data: [] };
     if (networkStatus.connected) {
 
       const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
@@ -120,18 +128,18 @@ const List = () => {
     const nav = document.querySelector('nav');
     const toolbarTable = document.querySelector('.Toolbar-table');
     const tablePagination = document.querySelector('.MuiTablePagination-root');
-      
+
     if (tableContainer) {
       tableContainer.style.width = (width - nav.offsetWidth) + 'px';
       tableContainer.style.height = (height - header.offsetHeight
-        - toolbarTable.offsetHeight-tablePagination.offsetHeight) + 'px';
+        - toolbarTable.offsetHeight - tablePagination.offsetHeight) + 'px';
     }
   }, [height, width]);
 
   useEffect(() => {
     dispatch({ type: 'title', title: 'Registro Discapacidad' });
     fetchData(state.page)
-  }, [state.page,state.rowsPerPage]);
+  }, [state.page, state.rowsPerPage]);
 
   const [o, { defaultProps }] = useFormState(useState, {}, {});
 
@@ -155,19 +163,24 @@ const List = () => {
       }
     });
   };
+  
   function getAge(dateString) {
     var today = new Date();
     var birthDate = new Date(dateString);
     var age = today.getFullYear() - birthDate.getFullYear();
     var m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+      age--;
     }
     return age;
-}
+  }
+
   const toID = (row) => {
     return row._id && row._id.$oid ? row._id.$oid : row.id;
   }
+
+  const emptyRows = result.data && result.data.length;
+
   return (
     <>
       <Toolbar className="Toolbar-table" direction="row" >
@@ -193,7 +206,7 @@ const List = () => {
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <StyledTableCell padding="checkbox">
+              <HeaderTableCell padding="checkbox">
                 <Checkbox
                   style={{ color: 'white' }}
                   indeterminate={selected.length > 0 && selected.length < result.data.length}
@@ -203,27 +216,31 @@ const List = () => {
                     'aria-label': 'select all desserts',
                   }}
                 />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 80 }}>DNI
-                <TextField {...defaultProps('code')}
-                  style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 260 }}>Nombre Completo
-                <TextField {...defaultProps('fullName')}
-                  style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 80 }}>Edad
-                <TextField {...defaultProps('age')} style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 260 }}>Direccion
-                <TextField {...defaultProps('address')} style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 260 }}>Provincia
-                <TextField {...defaultProps('province')} style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
-              <StyledTableCell style={{ minWidth: 260 }}>Distrito
-                <TextField {...defaultProps('district')} style={{ padding: 0, marginTop: '5px !important' }} />
-              </StyledTableCell>
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 80 }}><span>DNI</span>
+                <TextField {...defaultProps('code')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 260 }}><span>Nombre Completo</span>
+                <TextField {...defaultProps('fullName')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 80 }}><span>Edad</span>
+                <TextField {...defaultProps('age')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 260 }}><span>Dirección</span>
+                <TextField {...defaultProps('address')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 100 }}><span>Telefono</span>
+                <TextField {...defaultProps('mainPhone')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 130 }}><span>Cuenta con certificado de discapacidad?</span>
+                <TextField {...defaultProps('disability_certificate')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 260 }}><span>Provincia</span>
+                <TextField {...defaultProps('province')} />
+              </HeaderTableCell>
+              <HeaderTableCell style={{ minWidth: 260 }}><span>Distrito</span>
+                <TextField {...defaultProps('district')} />
+              </HeaderTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -259,16 +276,22 @@ const List = () => {
                     <TableCell style={{ width: 260 }}>
                       {row.address}
                     </TableCell>
+                    <TableCell style={{ width: 100 }}>
+                      {row.mainPhone}
+                    </TableCell>
+                    <TableCell style={{ width: 30 }} align="center">
+                      {row.disability_certificate}
+                    </TableCell>
                     <TableCell style={{ width: 260 }}>
                       {row.provinceName}
                     </TableCell>
                     <TableCell style={{ width: 260 }}>
-                      {row.districtName}
+                      {row.district}: {row.districtName}
                     </TableCell>
                   </StyledTableRow >
                 );
               })}
-            {(!emptyRows)&&(
+            {(!emptyRows) && (
               <TableRow style={{ height: 53 }}>
                 <TableCell colSpan={7} >
                   No data

@@ -6,7 +6,7 @@ android {
         applicationId "gob.regionancash.gds.disabled"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
+        versionCode 21
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -18,7 +18,7 @@ android {
     /*Start customized*/
     signingConfigs {
         release {
-            storeFile file("E:/projects/keystore/key.jks")
+            storeFile file(RELEASE_STORE_FILE)
             storePassword RELEASE_STORE_PASSWORD
             keyAlias RELEASE_KEY_ALIAS
             keyPassword RELEASE_KEY_PASSWORD

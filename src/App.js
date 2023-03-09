@@ -18,6 +18,8 @@ import { Network } from '@capacitor/network';
 import { db } from './db';
 import { useLiveQuery } from "dexie-react-hooks";
 
+
+
 function VDialog() {
 
   const dialog = useSelector((state) => state.dialog);

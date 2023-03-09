@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createRef } from 'react';
 import { useFormState, useResize, http } from 'gra-react-utils';
 import { VRadioGroup } from '../../utils/useToken';
-import { db } from '../../db';
+import { db,retrieve } from '../../db';
 import {
   ExpandMore as ExpandMoreIcon,
   Send as SendIcon,
@@ -69,13 +69,12 @@ export const Form = () => {
       //["/admin/directory/api/town/0/0", "town"],
       ["red", setReds],
       ["microred", setMicroreds],
-      //["/admin/desarrollo-social/api/establishment/0/0", "establishment"],
+      //["establishment",setEstablishments]
       ["region", setRegions],
       ["province", setProvinces],
       ["district", setDistricts],
-      // ["/api/poll/sample/0/0", "sample"],
     ].forEach(async (e) => {
-      e[1](await db[e[0]].toArray());
+      retrieve(e[0],e[1]);
     });
   }, []);
 
@@ -85,11 +84,19 @@ export const Form = () => {
         db.disabled.get(isNaN(pid) ? 0 : (1 * pid)).then((e) => {
           if (e) {
             if (e._id && !e._id.$oid) delete e._id;
-            set(e)
+            set(e);
+            onChangeBirthdate(e.birthdate);
           } else if (networkStatus.connected) {
            
             http.get('/api/minsa/disabled-quiz/' + pid).then((result) => {
+              if(result.province)
+              result.province=result.province.toString().padStart(4, '0');
+                if(result.district){
+                  result.district=result.district.toString().padStart(6, '0');
+                result.region=result.district.toString().substring(0, 2);
+                }
                 set(result);
+                onChangeBirthdate(result.birthdate);
             });
           }
         });
@@ -167,6 +174,10 @@ export const Form = () => {
       }
     }));
   };
+
+  const onClickGo = async () => {
+    navigate('/' + o.old.$oid + '/edit', { replace: true });
+  }
 
   const onClickAdd = async () => {
     navigate('/create', { replace: true });
@@ -263,9 +274,13 @@ export const Form = () => {
     </>
   }
 
+  const dayjs = require('dayjs');
+
   function onChangeBirthdate(v){
+
     var age=o.age;
     if(v){
+      if(!v.diff)v=dayjs(v);
       age=-v.diff(new Date(),'year');
     }
     set(o => ({...o,birthdate: v,age:age}),()=>{
@@ -291,14 +306,13 @@ export const Form = () => {
               <TextField
                 type="number"
                 label="DNI"
-                inputProps={{maxlength: 8, style: { textAlign: 'center' }}}
+                inputProps={{maxLength: 8, style: { textAlign: 'center' }}}
                 {...defaultProps('code', {
                   InputProps:{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           variant="contained"
-                          aria-label="Obtener Coordenadas"
                           onClick={onClickSearch}
                           color="primary"
                         >
@@ -322,9 +336,15 @@ export const Form = () => {
               </Alert>}
               {o.old&&<Alert severity="warning">Esta persona ya se encuentra registrada, 
               desea confirmar cambiar el registro con los datos actuales?.
+              
               <FormGroup>
                 <FormControlLabel  control={<Checkbox name="confirm" checked={o.confirm ?? false} onChange={handleChange} />} label="Confirmar" />
               </FormGroup>
+              <div>
+              <Button variant="contained" onClick={onClickGo} color="primary">
+        Ver Datos
+      </Button>
+      </div>
               </Alert>}
               <TextField
                 label="Apellidos"
@@ -347,7 +367,6 @@ export const Form = () => {
               <TextField
                 {...defaultProps("age")}
                 label="Edad"
-                inputProps={ { readOnly: true, }}
                 type="number"
               />
               <TextField
@@ -359,7 +378,7 @@ export const Form = () => {
               <FormControl>
                 <TextField 
                   label="Geolocación"
-                  inputProps={{maxlength: 8, style: { textAlign: 'center' }}}
+                  inputProps={{style: { textAlign: 'center' }}}
                   value={o.location ? (JSON.stringify(o.location.coordinates)) : ''}
                   InputProps={{
                     endAdornment: (
@@ -506,24 +525,6 @@ export const Form = () => {
                 {...defaultProps("medicalReport")}
                 label="Informe Medico"
                 multiline
-              />
-               <TextField
-                {...defaultProps("type")}
-                label="Tipo discapacidad"
-                multiline
-                inputProps={ { readOnly: true, }}
-              />
-              <TextField
-                {...defaultProps("other_type")}
-                label="Otro tipo"
-                multiline
-                inputProps={ { readOnly: true, }}
-              />
-              <TextField
-                {...defaultProps("devices")}
-                label="Dispositivos requeridos"
-                multiline
-                inputProps={ { readOnly: true, }}
               />
               <VRadioGroup
                 {...defaultProps("disability_certificate")}
@@ -925,7 +926,34 @@ export const Form = () => {
               }
             </AccordionDetails>
           </Accordion>
-
+          {o.muni?<Accordion expanded={true}>
+            <AccordionSummary variant="h6" component="div">
+              REGISTRO MUNICIPACIDAD
+            </AccordionSummary>
+            <AccordionDetails >
+               <TextField
+                {...defaultProps("type",{ required:false})}
+                label="Tipo discapacidad"
+                multiline
+                
+                 
+                
+                inputProps={ { readOnly: true,required:false }}
+              />
+              <TextField
+                {...defaultProps("other_type",{ required:false})}
+                label="Otro tipo"
+                multiline
+                inputProps={ { readOnly: true, }}
+              />
+              <TextField
+                {...defaultProps("devices",{ required:false})}
+                label="Dispositivos requeridos"
+                multiline
+                inputProps={ { readOnly: true, }}
+              />
+            </AccordionDetails>
+          </Accordion>:null}
         </Box>
         <Stack direction="row" justifyContent="center"
           style={{ padding: '10px', backgroundColor: '#1976d2' }}

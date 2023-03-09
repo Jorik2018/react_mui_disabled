@@ -1,27 +1,21 @@
 import React, { useState, useEffect, createRef } from 'react';
 import { useFormState, http, useResize } from 'gra-react-utils';
-import { VRadioGroup } from '../utils/useToken';
-import Dexie from 'dexie';
 import {
   Send as SendIcon,
   Add as AddIcon,
-  Edit as EditIcon,
-  Cancel as CancelIcon ,
-   Search as SearchIcon,
    SetMealOutlined
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Accordion, AccordionDetails, InputLabel, Input, IconButton,
-  Box, Button, Checkbox, Fab, FormHelperText,InputAdornment,
-  FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
+  Accordion, AccordionDetails, 
+  Box, Button, Checkbox, Fab, MenuItem, 
   RadioGroup, Stack, TextField
 } from '@mui/material';
 import {
   useNavigate, useParams, useLocation
 } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { db } from '../db';
+import { db,retrieve } from '../db';
 
 export const Form = () => {
 
@@ -54,10 +48,8 @@ export const Form = () => {
   useEffect(() =>  {
     dispatch({ type: 'title', title: 'Configuración' });
     [
-      //["/admin/directory/api/town/0/0", "town"],
       ["red",setReds],
       ["microred",setMicroreds],
-      //["/admin/desarrollo-social/api/establishment/0/0", "establishment"],
       ["region",setRegions],
       ["province",setProvinces],
       [ "district",setDistricts],
@@ -100,28 +92,15 @@ export const Form = () => {
 
   const onClickRetrieve = () => {
     [
-      ["/api/grds/red/0/0", "red",setReds],
-      ["/api/grds/microred/0/0", "microred",setMicroreds],
-      //["/admin/desarrollo-social/api/establishment/0/0", "establishment"],
-      ["/admin/directory/api/region/0/0", "region",setRegions],
-      ["/admin/directory/api/province/0/0", "province",setProvinces],
-      ["/admin/directory/api/district/0/0", "district",setDistricts]
-    ].forEach((e) => {
-      http.get(e[0]).then(function(data){
-        var table=db[e[1]];
-        table.clear().then(()=>{
-          console.log(e[0]);
-          data=data.data||data;
-          table.bulkAdd(data).then(function(lastKey) {
-            if(e[2]){
-              e[2](data);
-            }
-          }).catch(function (e) {
-            console.log(e)
-          });
-        });
-        
-      });
+      //["/admin/directory/api/town/0/0", "town"],
+      ["red", setReds],
+      ["microred", setMicroreds],
+      //["establishment",setEstablishments]
+      ["region", setRegions],
+      ["province", setProvinces],
+      ["district", setDistricts],
+    ].forEach(async (e) => {
+      retrieve(e[0],e[1],true);
     });
     //navigate(-1);
   }
