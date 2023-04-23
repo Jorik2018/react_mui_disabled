@@ -1,24 +1,18 @@
 import { useEffect } from 'react';
 import HomePage from './HomePage';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import {
-  BrowserRouter as Router
-} from "react-router-dom";
-import './App.css';
-import useToken, { Login } from './utils/useToken';
-import { gapi } from 'gapi-script';
+import { BrowserRouter as Router } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Button, Dialog, DialogActions,
   DialogContent, DialogContentText, DialogTitle
 } from '@mui/material';
-import { http } from 'gra-react-utils';
+import { http, useToken, OAuth } from 'gra-react-utils';
 import { App as App2 } from '@capacitor/app';
 import { Network } from '@capacitor/network';
 import { db } from './db';
 import { useLiveQuery } from "dexie-react-hooks";
-
-
+import './App.css';
 
 function VDialog() {
 
@@ -63,13 +57,29 @@ function App() {
 
   const { token, setToken, logOut } = useToken();
 
-  
-
   const dispatch = useDispatch();
 
-  const disableds = useLiveQuery(
+  const url = useSelector((state) => state.url);
+
+  http.onError = (request) => {
+    dispatch({ type: 'error', msg: ('<b>' + request.url + '</b><br/>' + request.error + '->' + request.message) });
+  };
+
+  useEffect(() => {
+    App2.addListener('appUrlOpen', (event) => {
+      dispatch({ type: 'appUrlOpen', url: event.url });
+    });
+  }, [dispatch]);
+
+  if (!token) {
+    return <><OAuth setToken={setToken} url={url} redirect={(url)=>{
+      dispatch({ type: 'appUrlOpen', url: url });
+    }}/><VDialog /></>
+  }
+
+  const disableds = [];/*useLiveQuery(
     () => db.disabled.toArray()
-  );
+  );*/
 
   const syncronize=()=>{
     if(disableds){
@@ -84,6 +94,14 @@ function App() {
       }
   }
 
+  Network.getStatus().then((status)=>{
+    dispatch({type:'networkStatus',status:status});
+    if(status.connected){
+      syncronize();
+    }
+  });
+
+
   Network.addListener('networkStatusChange',status => {
     console.log(status);
     dispatch({type:'networkStatus',status:status});
@@ -91,36 +109,6 @@ function App() {
       syncronize();
     }
   });
-  
-  Network.getStatus().then((status)=>{
-    dispatch({type:'networkStatus',status:status});
-    if(status.connected){
-      syncronize();
-    }
-  });;
-
-  http.onError = (request) => {
-    dispatch({ type: 'error', msg: ('<b>' + request.url + '</b><br/>' + request.error + '->' + request.message) });
-  };
-
-  useEffect(() => {
-    App2.addListener('appUrlOpen', (event) => {
-      dispatch({ type: 'appUrlOpen', url: event.url });
-    });
-    const initClient = () => {
-      gapi.client.init({
-        clientId: process.env.REACT_APP_PUBLIC_GOOGLE_CLIENT_ID,
-        scope: ''
-      });
-      const accessToken = gapi.auth.getToken();
-      console.log(accessToken);
-    };
-    gapi.load('client:auth2', initClient);
-  }, [dispatch]);
-
-  if (!token) {
-    return <><Login setToken={setToken} /><VDialog /></>
-  }
 
   const theme = createTheme({
     status: {

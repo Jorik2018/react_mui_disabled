@@ -4,13 +4,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { createStore } from 'redux'
-import { Provider } from 'react-redux'
-import { useSelector, useDispatch } from "react-redux";
+import { Provider, useSelector, useDispatch } from "react-redux";
 import {
   Backdrop, CircularProgress
 } from '@mui/material';
 import { http } from 'gra-react-utils';
-
 import { db } from './db';
 
 if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
@@ -22,9 +20,9 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
   "DESARROLLO_SOCIAL_REGISTER_DISABLED","DESARROLLO_SOCIAL_ACCESS_DISABLED"]));
 }
 
-http.baseURL = process.env.REACT_APP_BASE_URL;
+http.baseURL = import.meta.env.VITE_APP_BASE_URL;
 
-function counterReducer(state = {title:'',networkStatus:{},drawer:false, url:null,load: false, snack: null, cb: null, dialog: null, result: null }, action) {
+function counterReducer(state:any = {title:'',networkStatus:{},drawer:false, url:null,load: false, snack: null, cb: null, dialog: null, result: null }, action:any) {
 
   switch (action.type) {
     case 'alert':
@@ -51,21 +49,19 @@ function counterReducer(state = {title:'',networkStatus:{},drawer:false, url:nul
   }
 }
 
-
-
 let store = createStore(counterReducer)
 
-
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
 
 function VBackdrop() {
 
-  const load = useSelector((state) => state.load);
+  const load = useSelector((state:any) => state.load);
 
   const dispatch = useDispatch();
 
-  http.loadingMask = (show) => {
+  http.loadingMask = (show:any) => {
     dispatch({ type: 'load', show: show });
   };
   return <Backdrop style={{ zIndex: 100000 }}
@@ -81,7 +77,6 @@ root.render(
     <Provider store={store}>
       <App />
       <VBackdrop />
-
     </Provider>
   </React.StrictMode>
 );

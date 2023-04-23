@@ -1,20 +1,17 @@
-import React, { useState, useEffect, createRef } from 'react';
+import { useState, useEffect, createRef } from 'react';
 import { useFormState, useResize, http } from 'gra-react-utils';
 import { VRadioGroup } from '../../utils/useToken';
 import { db } from '../../db';
 
 import {
-  ExpandMore as ExpandMoreIcon,
   Send as SendIcon,
   Add as AddIcon,
-  Room as RoomIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   Accordion, AccordionSummary, AccordionDetails,Alert,
-  Box, Button, Card, CardContent, Checkbox, Fab,
-  FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
+  Box, Button, Checkbox, Fab, FormControlLabel, FormGroup, MenuItem, Radio,
   Stack, InputAdornment, IconButton, TextField
 } from '@mui/material';
 import {
@@ -108,17 +105,15 @@ export const Form = () => {
     }
   }, [pid]);
 
-  const { width, height } = useResize(React);
-
-  useEffect(() => {
+  useResize(({ width, height }) => {
     if (formRef.current) {
-      const header = document.querySelector('.MuiToolbar-root');
       const [body, toolBar] = formRef.current.children;
       const nav = document.querySelector('nav');
-      body.style.height = (height - header.offsetHeight - toolBar.offsetHeight) + 'px';
+      body.style.height = (height - toolBar.offsetHeight) + 'px';
+      body.style.width = (width) + 'px';
       toolBar.style.width = (width - nav.offsetWidth) + 'px';
     }
-  }, [width, height]);
+  },formRef);
 
   const onClickCancel = () => {
     navigate(-1);
@@ -214,10 +209,10 @@ export const Form = () => {
 
   function getActions() {
     return <>
-      <Button variant="contained" onClick={onClickCancel} color="primary">
+      <Button onClick={onClickCancel} color="primary">
         Cancelar
       </Button>
-      <Button disabled={o.old&&!o.confirm} variant="contained" onClick={onClickSave} color="primary" endIcon={<SendIcon />}>
+      <Button disabled={o.old&&!o.confirm} onClick={onClickSave} color="primary" endIcon={<SendIcon />}>
         Grabar
       </Button>
     </>
@@ -228,14 +223,14 @@ export const Form = () => {
       <form ref={formRef} onSubmit={onSubmit} style={{ textAlign: 'left' }}>
         <Box style={{ overflow: 'auto' }}>
           <Accordion expanded={true}>
-            <AccordionSummary variant="h6" component="div">
+            <AccordionSummary component="div">
               DATOS DE IDENTIFICACION
             </AccordionSummary>
             <AccordionDetails >
               <TextField
                 type="number"
                 label="DNI"
-                inputProps={{maxlength: 8, style: { textAlign: 'center' }}}
+                inputProps={{maxLength: 8, style: { textAlign: 'center' }}}
                 {...defaultProps('code', {
 
                   InputProps:{
@@ -244,7 +239,6 @@ export const Form = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          variant="contained"
                           aria-label="Obtener Coordenadas"
                           onClick={onClickSearch}
                           color="primary"

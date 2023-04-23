@@ -1,37 +1,24 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState, createRef } from 'react';
 import {
-  Mail as MailIcon,
   Menu as MenuIcon,
-  InsertChart as ChartIcon,
-  PivotTableChart as PivotTableChartIcon,
-  Map as MapIcon,
-  Add as AddIcon,
-  Quiz as QuizIcon,
-  Logout as LogoutIcon,
-  Group as GroupIcon,
-  AccountCircle as AccountCircleIcon,
-  Settings as SettingsIcon
 } from '@mui/icons-material';
 import {
-  Alert, AppBar, Box, CssBaseline, Drawer, Divider, IconButton, List, ListItem,
-  ListItemButton, ListItemIcon, ListItemText, Snackbar, Toolbar,
+  Alert, AppBar, Box, CssBaseline, Drawer, IconButton, Snackbar, Toolbar,
   Typography
 } from '@mui/material';
-import { debounce } from 'gra-react-utils';
-import lazyLoader from "./utils/LazyLoader";
-
+import { lazyLoader, useResize } from 'gra-react-utils';
+import VMenu from './Menu';
 import {
   Routes,
-  Route, useLocation,
-  useNavigate
+  Route
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
-function VDrawer(props) {
+function VDrawer(props: any) {
   const dispatch = useDispatch();
 
   const onClose = () => { dispatch({ type: "drawer" }) };
-  const drawer = useSelector((state) => state.drawer);
+  const drawer = useSelector((state: any) => state.drawer);
   return <Drawer variant="temporary"
     open={drawer}
     onClose={onClose}
@@ -47,7 +34,7 @@ function VDrawer(props) {
 }
 
 function VSnackbar() {
-  const snack = useSelector((state) => state.snack);
+  const snack = useSelector((state: any) => state.snack);
 
   const dispatch = useDispatch();
 
@@ -64,9 +51,9 @@ function VSnackbar() {
   </Snackbar>;
 }
 
-function VAppBar(props) {
+function VAppBar(props: any) {
 
-  const networkStatus = useSelector((state) => state.networkStatus);
+  const networkStatus = useSelector((state: any) => state.networkStatus);
 
   return <AppBar style={{ 'background': networkStatus.connected ? '' : 'red' }} {...props}
     position="fixed"
@@ -74,135 +61,58 @@ function VAppBar(props) {
 
 }
 
-const HomePage = ({ logOut ,match }) => {
+const HomePage:any = ({ logOut }: any) => {
 
-  const setO= React.useState({ title: 'Cuestionarios Discapacidad' })[1];
+  const setO = useState({ title: 'Cuestionarios Discapacidad' })[1];
 
-  const [perms, setPerms] = React.useState([]);
+  const [perms, setPerms] = useState([]);
+
+  const b=[null];
 
   const dispatch = useDispatch();
 
-  const title = useSelector((state) => state.title);
+  const title = useSelector((state: any) => state.title);
 
   const handleDrawerToggle = () => {
     dispatch({ type: 'drawer' });
   };
 
-  const items = [
-    {
-      perms:'DISABLED_REGISTER',text: 'Evaluación Discapacidad', icon: <QuizIcon />, path: '/', items: [
-        { text: 'Agregar', icon: <AddIcon />, path: '/create' }
-      ]
-    },
-    {
-      perms:'DISABLED_REGISTER',text: 'Registro Discapacidad', icon: <QuizIcon />, path: '/register', items: [
-        { text: 'Agregar', icon: <AddIcon />, path: '/register/create' }
-      ]
-    },
-    {
-      text: 'Configuración', icon: <SettingsIcon />, path: '/setting'
-    },
-    {
-      text: 'Mi cuenta', icon: <AccountCircleIcon />, path: '/profile'
-    },
-    {
-      perms:'ACCESS_USERS',text: 'Usuarios', icon: <GroupIcon />, path: '/user', items: [
-        { text: 'Agregar', icon: <AddIcon />, path: '/user/create' }
-      ]
-    },
-    {
-      text: 'Graficos', icon: <ChartIcon />, path: '/charts'
-    },
-    {
-      text: 'Mapa', icon: <MapIcon />, path: '/map'
-    },
-    {
-      text: 'Pivot', icon: <PivotTableChartIcon />, path: '/pivot'
-    },
-    {
-      text: 'Salir', icon: <LogoutIcon />, onClick: () => {
-        logOut();
-      }
-    }
-  ]
-
-  const drawer = (
-    <div>
-      <Toolbar />
-      <Divider />
-      <List>
-        {items.filter((e)=>{
-            return e.perms?perms.includes(e.perms):true;
-        }).map((item, index0) => (
-          <React.Fragment key={'List_' + index0} >
-            <ListItem>
-              <ListItemButton onClick={item.onClick ? item.onClick : () => {
-                handleDrawerToggle();
-                navigate(item.path);
-              }}>
-                <ListItemIcon>
-                  {item.icon || <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-
-              </ListItemButton>
-            </ListItem>
-            {item.items?.map((item, index) => (
-              <ListItem key={'List_' + index0 + '_' + index} disablePadding style={{ paddingLeft: '40px' }}>
-                <ListItemButton onClick={item.onClick ? item.onClick : () => {
-                  handleDrawerToggle();
-                  navigate(item.path);
-                }}>
-                  <ListItemIcon>
-                    {item.icon || <MailIcon />}
-                  </ListItemIcon>
-                  <ListItemText primary={item.text} />
-
-                </ListItemButton>
-              </ListItem>
-            ))}
-
-          </React.Fragment>
-        ))}
-      </List>
-    </div>
-  );
-
-  let location = useLocation();
-
   useEffect(() => {
     try {
-      var s = localStorage.getItem("perms");
+      let s: any = localStorage.getItem("perms");
       if (s) {
         s = JSON.parse(s);
         setPerms(s);
+        
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
     }
+    console.log('homemounted');
+    b[0]=(formRef.current);
   }, []);
 
-  const formRef = React.createRef();
+  const formRef = createRef();
 
-  useEffect(() => {
-    const debouncedHandleResize = debounce((width, height) => {
-      const header = document.querySelector('.MuiToolbar-root');
-      const body = formRef.current;
-      if (body)
-        body.style.height = (height - header.offsetHeight * 0) + 'px';
-    });
-    debouncedHandleResize();
-    window.addEventListener('resize', debouncedHandleResize)
-    return _ => {
-      window.removeEventListener('resize', debouncedHandleResize)
+  useResize(({width,height}:any)=>{
+    const header: any = document.querySelector('.MuiToolbar-root');
+    const nav:any = document.querySelector('nav');
+    const body: any = b[0]//formRef.current;
+    if (body){
+      body.style.height = (height - header.offsetHeight * 0) + 'px';
+      Array.prototype.forEach.call(body.children, (x) =>{
+        var event:any = new CustomEvent("parentResize", { bubbles: true });
+        event.height = (height - header.offsetHeight);
+        event.width =  (width - nav.offsetWidth);
+        //console.log('event.height='+event.height)
+        x.dispatchEvent(event);
+      });
     }
-  }, [location,formRef]);
+  });
 
   const drawerWidth = 240;
 
-  let navigate = useNavigate();
-
-  const ChartPanel = lazyLoader(() => import('./screens/Charts'));
+  const ChartPanel: any = lazyLoader(() => import('./screens/Charts'));
 
   const MapPanel = lazyLoader(() => import('./screens/Map'));
 
@@ -212,13 +122,13 @@ const HomePage = ({ logOut ,match }) => {
     .then(module => ({ default: module.Form }))
   );
 
-  const DisabledList = lazyLoader(() => import('./screens/disabled/List'));
+  const DisabledList: any = lazyLoader(() => import('./screens/disabled/List'));
 
   const DisabledForm = lazyLoader(() => import('./screens/disabled/Form')
     .then(module => ({ default: module.Form }))
   );
 
-  const UserList = lazyLoader(() => import('./screens/user/List'));
+  const UserList: any = lazyLoader(() => import('./screens/user/List'));
 
   const PivotTable = lazyLoader(() => import('./screens/disabledQuiz/PivotTable'));
 
@@ -233,6 +143,7 @@ const HomePage = ({ logOut ,match }) => {
   const SettingForm = lazyLoader(() => import('./screens/Setting')
     .then(module => ({ default: module.Form }))
   );
+
 
 
   return (
@@ -270,7 +181,7 @@ const HomePage = ({ logOut ,match }) => {
           onClose={handleDrawerToggle}
           width={drawerWidth}
         >
-          {drawer}
+          <VMenu logOut={logOut}/>
         </VDrawer>
         <Drawer
           variant="permanent"
@@ -280,7 +191,7 @@ const HomePage = ({ logOut ,match }) => {
           }}
           open
         >
-          {drawer}
+          <VMenu/>
         </Drawer>
       </Box>
       <Box ref={formRef}
@@ -289,7 +200,7 @@ const HomePage = ({ logOut ,match }) => {
       >
         <Toolbar className="_" />
         <Routes>
-          <Route index element={perms.includes('DISABLED_REGISTER')?<DisabledQuizList />:<ChartPanel />} />
+          <Route index element={perms.includes('DISABLED_REGISTER') ? <DisabledQuizList /> : <ChartPanel />} />
           <Route path={`/create`} element={<DisabledQuizForm />} />
           <Route path={`/:pid/edit`} element={<DisabledQuizForm />} />
 

@@ -10,10 +10,9 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Accordion, AccordionDetails, InputLabel, Input, IconButton,
-  Box, Button, Checkbox, Fab, FormHelperText,InputAdornment,
-  FormControl, FormControlLabel, FormGroup, FormLabel, MenuItem, Radio,
-  RadioGroup, Stack, TextField
+  Accordion, AccordionDetails, IconButton,
+  Box, Button, Checkbox, Fab, InputAdornment,
+  FormControl, FormControlLabel, FormGroup, FormLabel, Radio, Stack, TextField
 } from '@mui/material';
 import {
   useNavigate, useParams, useLocation
@@ -24,9 +23,7 @@ import { useDispatch } from "react-redux";
 export const Form = () => {
 
   const dispatch = useDispatch();
-
-  const location = useLocation();
-
+  
   const { uid } = useParams();
 
   const formRef = createRef();
@@ -53,11 +50,7 @@ export const Form = () => {
             uid,
             name
             mail,
-            fullName,
             directoryId,
-            names,
-            firstSurname,
-            lastSurname,
             status
             people{
               code
@@ -70,7 +63,7 @@ export const Form = () => {
               birthdate
             }
             userRoles {
-              pk {
+              pK {
                 rid
               },
               role{
@@ -82,9 +75,12 @@ export const Form = () => {
       };
       http.gql('/api/admin/graphql', data).then((data) => {
         data.user.roles = data.user.userRoles.map((e) => {
-          data.user['role_' + e.pk.rid] = !!e.active;
-          return { value: e.pk.rid, label: e.role.name.replace('_', ' ').split(' ').map((e) => (e.charAt(0).toUpperCase() + e.slice(1))).join(' ') };
+          console.log(e);
+          e.PK=e.pK;
+          data.user['role_' + e.pK.rid] = !!e.active;
+          return { value: e.pK.rid, label: e.role.name.replace('_', ' ').split(' ').map((e) => (e.charAt(0).toUpperCase() + e.slice(1))).join(' ') };
         });
+        console.log(data.user.roles);
         set(data.user);
       });
     }
@@ -120,12 +116,15 @@ export const Form = () => {
     const form = formRef.current;
     let o2 = JSON.parse(JSON.stringify(o));
     o2.userRoles.forEach((e) => {
-      e.active = !!o2['role_' + e.pk.rid];
-      delete o2['role_' + e.pk.rid];
+      e.active = !!o2['role_' + e.PK.rid];
+      delete o2['role_' + e.PK.rid];
     });
     delete o2.roles;
+    if(!c.editPeople){
+      delete o2.people;
+    }
     if (form != null && validate(form)) {
-      http.post('/api/admin/user', o2, { Authorization: null }).then((result) => {
+      http.post('/api/admin/user', o2).then((result) => {
         dispatch({ type: "snack", msg: 'Registro grabado!' });
         if (!o.uid) {
           if (result.uid)
@@ -275,7 +274,6 @@ export const Form = () => {
                 {...defaultProps('pass', { required: false })}
                 inputProps={{ maxLength: 50 }}
               />
-
               <VRadioGroup
                 {...defaultProps("status")}
                 label="Estado"
@@ -284,7 +282,7 @@ export const Form = () => {
                 <FormControlLabel value="0" control={<Radio />} label="Bloqueado" />
               </VRadioGroup>
               <TextField
-                {...defaultProps("mainPhone")}
+                {...defaultProps("mainPhone", { required: false })}
                 label="Teléfono fijo / Celular"
               />
               {o.roles && o.roles.length ? <FormControl>
