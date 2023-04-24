@@ -196,12 +196,13 @@ const HomePage:any = ({ logOut }: any) => {
           <VMenu/>
         </Drawer>
       </Box>
+
       <Box ref={formRef}
         component="main"
         sx={{ flexGrow: 1, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Toolbar className="_" />
-        <Routes>
+        <Routes >
           <Route index element={perms.includes('DISABLED_REGISTER') ? <DisabledQuizList /> : <ChartPanel />} />
           <Route path={`/create`} element={<DisabledQuizForm />} />
           <Route path={`/:pid/edit`} element={<DisabledQuizForm />} />

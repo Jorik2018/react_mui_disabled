@@ -107,7 +107,7 @@ const VMenu:any = ({ logOut }: any) => {
                         <ListItem>
                             <ListItemButton onClick={item.onClick ? item.onClick : () => {
                                 handleDrawerToggle();
-                                navigate(import.meta.env.VITE_BASE+'/'+item.path);
+                                navigate(import.meta.env.VITE_BASE+item.path);
                             }}>
                                 <ListItemIcon>
                                     {item.icon || <MailIcon />}
@@ -120,7 +120,7 @@ const VMenu:any = ({ logOut }: any) => {
                             <ListItem key={'List_' + index0 + '_' + index} disablePadding style={{ paddingLeft: '40px' }}>
                                 <ListItemButton onClick={item.onClick ? item.onClick : () => {
                                     handleDrawerToggle();
-                                    navigate(item.path);
+                                    navigate(import.meta.env.VITE_BASE+item.path);
                                 }}>
                                     <ListItemIcon>
                                         {item.icon || <MailIcon />}
