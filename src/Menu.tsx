@@ -16,7 +16,7 @@ import {
     Divider, List, ListItem,
     ListItemButton, ListItemIcon, ListItemText, Toolbar, Checkbox
 } from '@mui/material';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const VMenu:any = ({ logOut }: any) => {
@@ -27,11 +27,15 @@ const VMenu:any = ({ logOut }: any) => {
         dispatch({ type: 'drawer' });
     };
 
-    const handleToggle = () => {
-        setChecked(!checked);
-    };
+    const connected = useSelector((state: any) => state.connected);
 
-    const [checked, setChecked] = useState(false);
+    const [checked,setChecked]=useState(connected);
+
+    const handleToggle = () => {
+        setChecked(!connected);
+        dispatch({ type: 'connected',connected:!connected });
+       
+    };
 
     const [perms, setPerms] = useState([]);
 
@@ -67,7 +71,8 @@ const VMenu:any = ({ logOut }: any) => {
             text: 'Pivot', icon: <PivotTableChartIcon />, path: '/pivot'
         },
         {
-            text: 'Conectado', icon: checked ? <NetworkCell /> : <SignalCellularOff />, onClick: handleToggle, widget:<Checkbox checked={checked} />
+            text: 'Conectado', icon: connected ? <NetworkCell /> : <SignalCellularOff />,
+             onClick: handleToggle, widget:<Checkbox checked={checked} />
         },
         {
             text: 'Salir', icon: <LogoutIcon />, onClick: () => {

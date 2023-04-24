@@ -2,7 +2,8 @@ import { useState, useEffect , useRef } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-//import { db } from '../../db';
+import { db } from '../../db';
+import dayjs from 'dayjs';
 import {
   Button, Checkbox, Fab, styled, Table, TableCell, TextField, TablePagination,
   TableHead, TableBody, TableRow, TableContainer, Toolbar
@@ -62,7 +63,9 @@ const List = () => {
 
   const isSelected = (code:any) => selected.indexOf(code) !== -1;
 
-  const networkStatus = useSelector((state:any) => state.networkStatus);
+  const online = useSelector((state:any) => {
+    return state.networkStatus.connected&&(state.connected==null||state.connected)
+  });
 
   const onChangeAllRow = (event) => {
     if (event.target.checked) {
@@ -111,16 +114,22 @@ console.log(event);
   }
 
   const fetchData = async (page:any) => {
-    var data:any = { data: [] };
-    if (networkStatus.connected) {
-
+    var f = await db.disabled.toArray();
+    var data:any = { data: f ? f : [] };
+    if (online) {
       const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
         + '?' + new URLSearchParams(o).toString()
       );
       data.size = result.size;
       data.data = data.data.concat(result.data);
+      data.data.forEach(r=>{
+        if(r.birthdate)
+        r.age=-dayjs(r.birthdate).diff(new Date(),'year');;
+      });
     }
     setResult(data);
+
+
   };
 
   useResize(({height, width}:any) => {    

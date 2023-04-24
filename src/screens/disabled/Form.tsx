@@ -6,16 +6,17 @@ import { db } from '../../db';
 import {
   Send as SendIcon,
   Add as AddIcon,
+  Room as RoomIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Accordion, AccordionSummary, AccordionDetails,Alert,
+  Accordion, AccordionSummary, AccordionDetails, Alert, FormControl,
   Box, Button, Checkbox, Fab, FormControlLabel, FormGroup, MenuItem, Radio,
   Stack, InputAdornment, IconButton, TextField
 } from '@mui/material';
 import {
-  useNavigate, useParams, useLocation
+  useNavigate, useParams//, useLocation
 } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Geolocation } from '@capacitor/geolocation';
@@ -27,11 +28,9 @@ export const Form = () => {
 
   const dispatch = useDispatch();
 
-  const networkStatus = useSelector((state) => state.networkStatus);
-
   const { pid } = useParams();
 
-  const formRef = createRef();
+  const formRef: any = createRef();
 
   const navigate = useNavigate();
 
@@ -41,55 +40,53 @@ export const Form = () => {
 
   const [districts, setDistricts] = useState([]);
 
-  const [old, setOld] = useState(null);
+  //const [old, setOld] = useState(null);
 
   const [reds, setReds] = useState([]);
 
   const [microreds, setMicroreds] = useState([]);
 
+  const online = useSelector((state: any) => {
+    return state.networkStatus.connected && (state.connected == null || state.connected)
+  });
 
-  const [o, { defaultProps, handleChange, bindEvents, validate, set }] = useFormState(useState, {
+  const [o, { defaultProps, handleChange, validate, set }] = useFormState(useState, {
     'houseAccess': '',
     'instructionGrade': '',
     'maritalStatus': '',
     'typeInsurance': '',
     'belongsAssociation': '',
     'carerRequired': ''
-  }, {});
-  const [cert, formCert] = useFormState(useState, {}, {});
+  });
 
-  const [open] = useState(true);
+  const [cert, formCert] = useFormState(useState, {});
 
   useEffect(() => {
     dispatch({ type: 'title', title: (pid ? 'Editar' : 'Registrar') + ' Registro' });
     [
-      //["/admin/directory/api/town/0/0", "town"],
       ["red", setReds],
       ["microred", setMicroreds],
-      //["/admin/desarrollo-social/api/establishment/0/0", "establishment"],
       ["region", setRegions],
       ["province", setProvinces],
-      ["district", setDistricts],
-      // ["/api/poll/sample/0/0", "sample"],
-    ].forEach(async (e) => {
+      ["district", setDistricts]
+    ].forEach(async (e: any) => {
       e[1](await db[e[0]].toArray());
     });
   }, []);
 
   useEffect(() => {
     if (pid) {
-      if (networkStatus.connected) {
+      if (online) {
         http.get('/api/minsa/disabled-quiz/' + pid).then((result) => {
-          
-            set(result);
+          set(result);
         });
       }
-    }else{
+    } else {
       try {
-        var s = localStorage.getItem("setting");
+        var s: any = localStorage.getItem("setting");
         if (s) {
           s = JSON.parse(s);
-          var o2 = {};
+          var o2: any = {};
           o2.red = s.red;
           o2.microred = s.microred;
           o2.region = s.region;
@@ -97,7 +94,7 @@ export const Form = () => {
           o2.district = s.district;
           o2.establishment = s.establishment;
           //o.town = s.town;
-          set({...o,...o2});
+          set({ ...o, ...o2 });
         }
       } catch (e) {
         console.log(e);
@@ -113,18 +110,35 @@ export const Form = () => {
       body.style.width = (width) + 'px';
       toolBar.style.width = (width - nav.offsetWidth) + 'px';
     }
-  },formRef);
+  }, formRef);
 
   const onClickCancel = () => {
     navigate(-1);
   }
 
-  const onClickSearch = () => {
+  const onSearchClick = () => {
     //33254965
-   
+    if(online)
+      http.get('/api/minsa/disabled-quiz/code/' + o.code).then((result) => {
+        if(result){
+          var no={};
+          formCert.set(result);
+          no['names']=result.names;
+          no['surnames']=result.surnames;
+          no['address']=result.address;
+          no['search']=o.code;
+          no['old']=result._id;
+          delete result._id;
+          if(result.id){
+            no['age']=result.edad;
+            no['disability_certificate']='SI';
+          }
+          set({...o,...no});
+        }
+      });
   };
 
-  const onClickGeolocation = async () => {
+  const onGeolocationClick = async () => {
     const coordinates = await Geolocation.getCurrentPosition();
     const coords = coordinates.coords;
     set(o => ({
@@ -140,47 +154,68 @@ export const Form = () => {
     }));
   };
 
+  const save = async (o) => {
+    var o2 = JSON.parse(JSON.stringify(o));
+    if (online) {
+      http.post('/api/minsa/disabled-quiz', o2).then(async (result) => {
+        dispatch({ type: "snack", msg: 'Registro grabado!' });
+        if (o.id) {
+          await db.disabled.get(1 * o.id).then(async (e) => {
+            console.log('get ' + e);
+            if (e) {
+              await db.disabled.delete(1 * o.id); console.log('fc');
+            }
+          })
+        }
+        if (!o2._id) {
+          console.log(o2);
+          if (result._id)
+            navigate('/' + result._id.$oid + '/edit', { replace: true });
+          else
+            navigate(-1);
+        }
+      });
+    } else {
+      if (!o2.id) {
+        o2.tmpId = new Date().getMilliseconds();
+        o2.id = -o2.tmpId;
+        await db.disabled.add(o2);
+        navigate('/' + o2.id + '/edit', { replace: true });
+      } else {
+        await db.disabled.update(o2.id, o2);
+      }
+      dispatch({ type: "snack", msg: 'Registro grabado!' });
+    }
+  }
+
   const onClickAdd = async () => {
     navigate('/register/create', { replace: true });
   }
 
-  function onChangeBirthdate(v){
-    var age=o.age;
-    if(v){
-      age=-v.diff(new Date(),'year');
+  const onChangeBirthdate = (v) => {
+    var age = o.age;
+    if (v) {
+      age = -v.diff(new Date(), 'year');
     }
-    set(o => ({...o,birthdate: v,age:age}),()=>{
+    set(o => ({ ...o, birthdate: v, age: age }), () => {
       console.log('after set');
     });
   }
 
-  const onClickSave = async () => {
+  const onSaveClick = async () => {
     const form = formRef.current;
-    if (0 || form != null && validate(form)) {
-      
-      var o2 = JSON.parse(JSON.stringify(o));
-      if (networkStatus.connected) {
-        http.post('/api/minsa/disabled-quiz/', o2).then(async (result) => {
-          dispatch({ type: "snack", msg: 'Registro grabado!' });
-          if (!o2._id) {
-            console.log(o2);
-            if (result.id)
-              navigate('/register/' + result.id + '/edit', { replace: true });
-            else
-              navigate(-1);
+    if (0 || form != null) {
+      if (validate(form)) {
+        save(o);
+      } else {
+        dispatch({
+          type: "confirm", msg: 'El formulario esta incompleto. Esta seguro de guardar el registro?', cb: (e) => {
+            if (e) {
+              set({ ...o, incomplete: true })
+              save(o);
+            }
           }
         });
-
-      } else {
-        if (!o2.id) {
-          o2.tmpId = 1 * new Date();
-          o2.id = -o2.tmpId;
-          //await db.disabled.add(o2);
-          navigate('/' + o2.id + '/edit', { replace: true });
-        } else {
-          //await db.disabled.update(o2.id, o2);
-        }
-        dispatch({ type: "snack", msg: 'Registro grabado!' });
       }
     } else {
       dispatch({ type: "alert", msg: 'Falta campos por completar!' });
@@ -209,10 +244,10 @@ export const Form = () => {
 
   function getActions() {
     return <>
-      <Button onClick={onClickCancel} color="primary">
+      <Button onClick={onClickCancel} color="primary" variant="contained">
         Cancelar
       </Button>
-      <Button disabled={o.old&&!o.confirm} onClick={onClickSave} color="primary" endIcon={<SendIcon />}>
+      <Button disabled={o.old && !o.confirm} onClick={onSaveClick} variant="contained" color="primary" endIcon={<SendIcon />}>
         Grabar
       </Button>
     </>
@@ -230,42 +265,43 @@ export const Form = () => {
               <TextField
                 type="number"
                 label="DNI"
-                inputProps={{maxLength: 8, style: { textAlign: 'center' }}}
+                inputProps={{ maxLength: 8, style: { textAlign: 'center' } }}
                 {...defaultProps('code', {
 
-                  InputProps:{
-                    
-                    
+                  InputProps: online && {
+
+
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="Obtener Coordenadas"
-                          onClick={onClickSearch}
+                          onClick={onSearchClick}
                           color="primary"
                         >
-                          {<SearchIcon />}
+                          <SearchIcon />
                         </IconButton>
                       </InputAdornment>
                     )
                   },
 
-                  onBlur: () => { 
-                    if(!pid&&o.code&&o.search!=o.code){
-                      onClickSearch();
+                  onBlur: () => {
+
+                    if (!pid && o.code && o.search != o.code) {
+                      onSearchClick();
                     }
                   }
                 })}
 
               />
-              {cert.id&&<Alert severity="success">Esta persona tiene certificado de discapacidad con codigo <b>{cert.id}</b>.
-              <FormGroup>
-              </FormGroup>
+              {cert.id && <Alert severity="success">Esta persona tiene certificado de discapacidad con codigo <b>{cert.id}</b>.
+                <FormGroup>
+                </FormGroup>
               </Alert>}
-              {o.old&&<Alert severity="warning">Esta persona ya se encuentra registrada, 
-              desea confirmar cambiar el registro con los datos actuales?.
-              <FormGroup>
-                <FormControlLabel  control={<Checkbox name="confirm" checked={o.confirm ?? false} onChange={handleChange} />} label="Confirmar" />
-              </FormGroup>
+              {o.old && <Alert severity="warning">Esta persona ya se encuentra registrada,
+                desea confirmar cambiar el registro con los datos actuales?.
+                <FormGroup>
+                  <FormControlLabel control={<Checkbox name="confirm" checked={o.confirm ?? false} onChange={handleChange} />} label="Confirmar" />
+                </FormGroup>
               </Alert>}
               <TextField
                 label="Nombres"
@@ -277,21 +313,44 @@ export const Form = () => {
                 {...defaultProps('surnames')}
                 inputProps={{ maxLength: '50' }}
               />
-                            <MobileDatePicker
-          inputFormat="DD/MM/YYYY"
-          label="Fecha Nacimiento"
-          value={o.birthdate||''}
-          onChange={onChangeBirthdate}
-          renderInput={(params) =>
-             <TextField  {...params} />}
-        />
-              
+              <MobileDatePicker
+                inputFormat="DD/MM/YYYY"
+                label="Fecha Nacimiento"
+                value={o.birthdate || ''}
+                onChange={onChangeBirthdate}
+                renderInput={(params) =>
+                  <TextField  {...params} />}
+              />
+
               <TextField
                 multiline
                 label="Dirección"
                 {...defaultProps('address')}
                 inputProps={{ maxLength: 250 }}
               />
+              <FormControl>
+                <TextField
+                  label="Geolocación"
+                  inputProps={{ style: { textAlign: 'center' } }}
+                  value={o.location ? (JSON.stringify(o.location.coordinates)) : ''}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="Obtener Coordenadas"
+                          onClick={onGeolocationClick}
+                          color="primary"
+                        >
+                          {<RoomIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                <Button startIcon={<RoomIcon />} onClick={onGeolocationClick} color="primary">
+                  Obtener Coordenadas
+                </Button>
+              </FormControl>
               <TextField
                 select
                 label="Región"
@@ -431,7 +490,7 @@ export const Form = () => {
                   label="Numero certificado"
                 />
               }
-              
+
               <TextField
                 select
                 {...defaultProps("belongsAssociation")}
@@ -486,7 +545,7 @@ export const Form = () => {
                 select
                 {...defaultProps("type")}
                 label="Tipo discapacidad"
-              
+
               >
                 {
                   [
@@ -501,7 +560,7 @@ export const Form = () => {
                 label="Otro tipo"
                 multiline
               />
-               <TextField
+              <TextField
                 select
                 {...defaultProps("severity")}
                 label="Severidad"
@@ -519,7 +578,7 @@ export const Form = () => {
                 label="Dispositivos requeridos"
                 multiline
               />
-              
+
             </AccordionDetails>
           </Accordion>
         </Box>

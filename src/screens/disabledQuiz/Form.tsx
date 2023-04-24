@@ -30,7 +30,9 @@ export const Form = () => {
 
   const dispatch = useDispatch();
 
-  const networkStatus = useSelector((state:any) => state.networkStatus);
+  const online = useSelector((state:any) => {
+    return state.networkStatus.connected&&(state.connected==null||state.connected)
+  });
 
   const { pid }:any = useParams();
 
@@ -88,7 +90,7 @@ export const Form = () => {
             if (e._id && !e._id.$oid) delete e._id;
             set(e);
             onChangeBirthdate(e.birthdate);
-          } else if (networkStatus.connected) {
+          } else if (online) {
            
             http.get('/api/minsa/disabled-quiz/' + pid).then((result:any) => {
               if(result.province)
@@ -136,28 +138,28 @@ export const Form = () => {
     navigate(-1);
   }
 
-  const onClickSearch = () => {
-    //33254965
-    http.get('/api/minsa/disabled-quiz/code/' + o.code).then((result) => {
-      if(result){
-        var no={};
-        formCert.set(result);
-        no['names']=result.names;
-        no['surnames']=result.surnames;
-        no['address']=result.address;
-        no['search']=o.code;
-        no['old']=result._id;
-        delete result._id;
-        if(result.id){
-          no['age']=result.edad;
-          no['disability_certificate']='SI';
+  const onSearchClick = () => {
+    if(online)
+      http.get('/api/minsa/disabled-quiz/code/' + o.code).then((result) => {
+        if(result){
+          var no={};
+          formCert.set(result);
+          no['names']=result.names;
+          no['surnames']=result.surnames;
+          no['address']=result.address;
+          no['search']=o.code;
+          no['old']=result._id;
+          delete result._id;
+          if(result.id){
+            no['age']=result.edad;
+            no['disability_certificate']='SI';
+          }
+          set({...o,...no});
         }
-        set({...o,...no});
-      }
-    });
+      });
   };
 
-  const onClickGeolocation = async () => {
+  const onGeolocationClick = async () => {
     const coordinates = await Geolocation.getCurrentPosition();
     const coords = coordinates.coords;
     set(o => ({
@@ -173,17 +175,9 @@ export const Form = () => {
     }));
   };
 
-  const onClickGo = async () => {
-    navigate('/' + o.old.$oid + '/edit', { replace: true });
-  }
-
-  const onClickAdd = async () => {
-    navigate('/create', { replace: true });
-  }
-
   const save=async (o)=>{
     var o2 = JSON.parse(JSON.stringify(o));
-      if (networkStatus.connected) {
+      if (online) {
         http.post('/api/minsa/disabled-quiz', o2).then(async (result) => {
           dispatch({ type: "snack", msg: 'Registro grabado!' });
           if (o.id) {
@@ -202,23 +196,29 @@ export const Form = () => {
               navigate(-1);
           }
         });
-
       } else {
         if (!o2.id) {
           o2.tmpId = new Date().getMilliseconds();
           o2.id = -o2.tmpId;
-          //await db.disabled.add(o2);
+          await db.disabled.add(o2);
           navigate('/' + o2.id + '/edit', { replace: true });
         } else {
-          //await db.disabled.update(o2.id, o2);
+          await db.disabled.update(o2.id, o2);
         }
         dispatch({ type: "snack", msg: 'Registro grabado!' });
       }
   }
 
-  const onClickSave = async () => {
-    const form = formRef.current;
+  const onGoClick = async () => {
+    navigate('/' + o.old.$oid + '/edit', { replace: true });
+  }
 
+  const onAddClick = async () => {
+    navigate('/create', { replace: true });
+  }
+
+  const onSaveClick = async () => {
+    const form = formRef.current;
     if (0 || form != null ) {
       if(validate(form)){
         save(o);
@@ -232,10 +232,9 @@ export const Form = () => {
           }
         });    
       }
-      
-    }/* else {
+    }else {
       dispatch({ type: "alert", msg: 'Falta campos por completar!' });
-    }*/
+    }
   };
 
   /* useEffect(() => {
@@ -249,10 +248,10 @@ export const Form = () => {
 
   function getActions() {
     return <>
-      <Button onClick={onClickCancel}  variant="contained" color="primary">
+      <Button onClick={onClickCancel} variant="contained" color="primary">
         Cancelar
       </Button>
-      <Button disabled={o.old&&!o.confirm}  onClick={onClickSave} variant="contained" color="primary" endIcon={<SendIcon />}>
+      <Button disabled={o.old&&!o.confirm}  onClick={onSaveClick} variant="contained" color="primary" endIcon={<SendIcon />}>
         Grabar
       </Button>
     </>
@@ -288,23 +287,23 @@ export const Form = () => {
                 label="DNI"
                 inputProps={{maxLength: 8, style: { textAlign: 'center' }}}
                 {...defaultProps('code', {
-                  InputProps:{
+                  InputProps:online?{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                          
-                          onClick={onClickSearch}
+                          onClick={onSearchClick}
                           color="primary"
                         >
                           {<SearchIcon />}
                         </IconButton>
                       </InputAdornment>
                     )
-                  },
+                  }:{},
 
                   onBlur: () => { 
                     if(!pid&&o.code&&o.search!=o.code){
-                      onClickSearch();
+                      onSearchClick();
                     }
                   }
                 })}
@@ -321,7 +320,7 @@ export const Form = () => {
                 <FormControlLabel  control={<Checkbox name="confirm" checked={o.confirm ?? false} onChange={handleChange} />} label="Confirmar" />
               </FormGroup>
               <div>
-              <Button onClick={onClickGo} color="primary">
+              <Button onClick={onGoClick} color="primary">
         Ver Datos
       </Button>
       </div>
@@ -365,7 +364,7 @@ export const Form = () => {
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="Obtener Coordenadas"
-                          onClick={onClickGeolocation}
+                          onClick={onGeolocationClick}
                           color="primary"
                         >
                           {<RoomIcon />}
@@ -374,7 +373,7 @@ export const Form = () => {
                     )
                   }}
                 />
-                <Button startIcon={<RoomIcon />} onClick={onClickGeolocation} color="primary">
+                <Button startIcon={<RoomIcon />} onClick={onGeolocationClick} color="primary">
                   Obtener Coordenadas
                 </Button>
               </FormControl>
@@ -828,6 +827,8 @@ export const Form = () => {
               </VRadioGroup>
             </AccordionDetails>
           </Accordion>
+          {
+            !isNaN(o.age)&&o.age!=''&&o.age<5&&
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
@@ -858,6 +859,7 @@ export const Form = () => {
               }
             </AccordionDetails>
           </Accordion>
+          }
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
@@ -941,7 +943,7 @@ export const Form = () => {
         </Stack>
 
         {(o._id || o.id) && <Fab color="primary" aria-label="add"
-          onClick={onClickAdd}
+          onClick={onAddClick}
           style={{
             position: 'absolute',
             bottom: 80, right: 24

@@ -53,9 +53,11 @@ function VSnackbar() {
 
 function VAppBar(props: any) {
 
-  const networkStatus = useSelector((state: any) => state.networkStatus);
+  const connected = useSelector((state: any) => {
+    return state.networkStatus.connected&&(state.connected==null||state.connected)
+  });
 
-  return <AppBar style={{ 'background': networkStatus.connected ? '' : 'red' }} {...props}
+  return <AppBar style={{ 'background': connected ? '' : 'red' }} {...props}
     position="fixed"
   >{props.children}</AppBar>;
 

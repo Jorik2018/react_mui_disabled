@@ -53,7 +53,9 @@ const List = () => {
 
   const tableRef = useRef()
 
-  const networkStatus = useSelector((state:any) => state.networkStatus);
+  const online = useSelector((state:any) => {
+    return state.networkStatus.connected&&(state.connected==null||state.connected)
+  });
 
   const onChangeAllRow = (event) => {
     if (event.target.checked) {
@@ -106,7 +108,7 @@ const List = () => {
   const fetchData = async (page) => {
     var f = await db.disabled.toArray();
     var data:any = { data: f ? f : [] };
-    if (networkStatus.connected) {
+    if (online) {
       const result = await http.get('/api/minsa/disabled-quiz/' + page + '/' + state.rowsPerPage
         + '?' + new URLSearchParams(o).toString()
       );
