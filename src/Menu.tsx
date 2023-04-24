@@ -92,6 +92,13 @@ const VMenu:any = ({  }: any) => {
                 s = JSON.parse(s);
                 setPerms(s);
             }
+           
+        } catch (e: any) {
+            console.log(e);
+        }
+        try {
+            let session=JSON.parse(localStorage.getItem('session'));
+            if(session&&session.perms)setPerms(session.perms);
         } catch (e: any) {
             console.log(e);
         }
