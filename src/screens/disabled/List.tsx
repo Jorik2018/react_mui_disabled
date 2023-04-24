@@ -132,19 +132,16 @@ console.log(event);
 
   };
 
-  useResize(({height, width}:any) => {    
-    const header:any = document.querySelector('.MuiToolbar-root');
+  useResize(({height, width}:any) => {
     const tableContainer:any = document.querySelector('.MuiTableContainer-root');
-    const nav:any = document.querySelector('nav');
     const toolbarTable:any = document.querySelector('.Toolbar-table');
     const tablePagination:any = document.querySelector('.MuiTablePagination-root');
     if (tableContainer) {
-
-      tableContainer.style.width = (width - nav.offsetWidth) + 'px';
-      tableContainer.style.height = (height - header.offsetHeight
-        - toolbarTable.offsetHeight - tablePagination.offsetHeight) + 'px';
+      toolbarTable.style.width = width  + 'px';
+      tableContainer.style.width = width + 'px';
+      tableContainer.style.height = (height - toolbarTable.offsetHeight-tablePagination.offsetHeight) + 'px';
     }
-  },tableRef);
+  }, tableRef);
 
   useEffect(() => {
     dispatch({ type: 'title', title: 'Registro Discapacidad' });

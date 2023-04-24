@@ -32,6 +32,8 @@ export const Form = () => {
 
   const formRef: any = createRef();
 
+  const viewRef: any=createRef();
+
   const navigate = useNavigate();
 
   const [regions, setRegions] = useState([]);
@@ -102,15 +104,13 @@ export const Form = () => {
     }
   }, [pid]);
 
-  useResize(({ width, height }) => {
+  useResize(({width, height}:any) => {
     if (formRef.current) {
-      const [body, toolBar] = formRef.current.children;
-      const nav = document.querySelector('nav');
+      const [body, toolBar]:any = formRef.current.children;
       body.style.height = (height - toolBar.offsetHeight) + 'px';
-      body.style.width = (width) + 'px';
-      toolBar.style.width = (width - nav.offsetWidth) + 'px';
+      toolBar.style.width = width + 'px';
     }
-  }, formRef);
+  },viewRef);
 
   const onClickCancel = () => {
     navigate(-1);
@@ -252,6 +252,7 @@ export const Form = () => {
       </Button>
     </>
   }
+
 
   function getContent() {
     return <LocalizationProvider dateAdapter={AdapterDayjs}><ThemeProvider theme={theme}>
@@ -600,7 +601,7 @@ export const Form = () => {
     </ThemeProvider></LocalizationProvider>
   }
   return <>{
-    1 == 1 ? <Box style={{ textAlign: 'left' }}>{getContent()}</Box>
+    1 == 1 ? <Box ref={viewRef} style={{ textAlign: 'left' }}>{getContent()}</Box>
       : <Box
         sx={{ display: 'flex' }}>
       </Box>

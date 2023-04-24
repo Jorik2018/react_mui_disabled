@@ -27,6 +27,8 @@ export const Form = () => {
 
   const formRef = createRef();
 
+  const viewRef = createRef();
+
   const navigate = useNavigate();
 
   const [regions, setRegions] = useState([]);
@@ -52,8 +54,7 @@ export const Form = () => {
       ["microred",setMicroreds],
       ["region",setRegions],
       ["province",setProvinces],
-      [ "district",setDistricts],
-     // ["/api/poll/sample/0/0", "sample"],
+      [ "district",setDistricts]
     ].forEach(async (e) => {
       e[1](await db[e[0]].toArray());
     });
@@ -83,16 +84,14 @@ export const Form = () => {
       const [body, toolBar] = formRef.current.children;
       const nav = document.querySelector('nav');
       body.style.height = (height - toolBar.offsetHeight) + 'px';
-      toolBar.style.width = (width - nav.offsetWidth) + 'px';
+      toolBar.style.width = width + 'px';
     }
-  },formRef);
+  },viewRef);
 
   const onClickRetrieve = () => {
     [
-      //["/admin/directory/api/town/0/0", "town"],
       ["red", setReds],
       ["microred", setMicroreds],
-      //["establishment",setEstablishments]
       ["region", setRegions],
       ["province", setProvinces],
       ["district", setDistricts],
@@ -133,10 +132,10 @@ export const Form = () => {
 
   function getActions() {
     return <>
-      <Button onClick={onClickRetrieve} color="primary">
+      <Button onClick={onClickRetrieve} color="primary" variant="contained">
         Recuperar
       </Button>
-      <Button  onClick={onClickSave} color="primary" endIcon={<SendIcon />}>
+      <Button  onClick={onClickSave} color="primary" endIcon={<SendIcon />} variant="contained">
         Grabar
       </Button>
     </>
@@ -224,7 +223,7 @@ export const Form = () => {
       </form>
   }
   return <>{
-    1 == 1 ? <Box style={{ textAlign: 'left' }}>{getContent()}</Box>
+    1 == 1 ? <Box ref={viewRef} style={{ textAlign: 'left' }}>{getContent()}</Box>
       : <Box
         sx={{ display: 'flex' }}>
       </Box>

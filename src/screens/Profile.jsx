@@ -24,7 +24,7 @@ export const Form = () => {
 
   const dispatch = useDispatch();
 
-  const location = useLocation();
+  const viewRef = createRef();
 
   const { uid } = useParams();
 
@@ -68,16 +68,13 @@ export const Form = () => {
     });
   }, []);
 
-  const { width, height } = useResize(React);
-
-  useEffect(() => {
+  useEffect(({ width, height }) => {
     if (formRef.current) {
       const header = document.querySelector('.MuiToolbar-root');
-      const [body, toolBar] = formRef.current.children;
+      const [body] = formRef.current.children;
       body.style.height = (height - header.offsetHeight - 0) + 'px';
-      //toolBar.style.width = (width - nav.offsetWidth) + 'px';
     }
-  }, [width, height]);
+  },viewRef);
 
   const onClickAdd = () => {
     navigate('/user/create', { replace: true });
@@ -252,7 +249,7 @@ export const Form = () => {
     </ThemeProvider>
   }
   return <>{
-    1 == 1 ? <Box style={{ textAlign: 'left' }}>{getContent()}</Box>
+    1 == 1 ? <Box ref={viewRef} style={{ textAlign: 'left' }}>{getContent()}</Box>
       : <Box
         sx={{ display: 'flex' }}>
       </Box>

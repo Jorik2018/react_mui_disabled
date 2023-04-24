@@ -63,6 +63,7 @@ export const Form = () => {
     'belongsAssociation': '',
     'carerRequired': ''
   });
+  
   const [cert, formCert] = useFormState(useState, {});
 
   //const [open] = useState(true);
@@ -70,10 +71,8 @@ export const Form = () => {
   useEffect(() => {
     dispatch({ type: 'title', title: (pid ? 'Editar' : 'Registrar') + ' Cuestionario' });
     [
-      //["/admin/directory/api/town/0/0", "town"],
       ["red", setReds],
       ["microred", setMicroreds],
-      //["establishment",setEstablishments]
       ["region", setRegions],
       ["province", setProvinces],
       ["district", setDistricts],
@@ -91,7 +90,7 @@ export const Form = () => {
             set(e);
             onChangeBirthdate(e.birthdate);
           } else if (online) {
-           
+          
             http.get('/api/minsa/disabled-quiz/' + pid).then((result:any) => {
               if(result.province)
               result.province=result.province.toString().padStart(4, '0');
