@@ -107,7 +107,7 @@ const VMenu:any = ({ logOut }: any) => {
                         <ListItem>
                             <ListItemButton onClick={item.onClick ? item.onClick : () => {
                                 handleDrawerToggle();
-                                navigate(item.path);
+                                navigate(import.meta.env.VITE_BASE+'/'+item.path);
                             }}>
                                 <ListItemIcon>
                                     {item.icon || <MailIcon />}
