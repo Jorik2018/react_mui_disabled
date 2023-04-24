@@ -24,9 +24,6 @@ const VMenu:any = ({  }: any) => {
 
     const { logOut } = useToken();
 
-    console.log('==========333333333333333==');
-    console.log(logOut);
-  
     const dispatch = useDispatch();
 
     const handleDrawerToggle = () => {
@@ -82,8 +79,8 @@ const VMenu:any = ({  }: any) => {
         },
         {
             text: 'Salir', icon: <LogoutIcon />, onClick: () => {
-                console.log(logOut);
                 logOut();
+                window.location.reload();
             }
         }
     ]
@@ -114,7 +111,7 @@ const VMenu:any = ({  }: any) => {
                         <ListItem>
                             <ListItemButton onClick={item.onClick ? item.onClick : () => {
                                 handleDrawerToggle();
-                                navigate(import.meta.env.VITE_BASE+item.path);
+                                navigate(item.path);
                             }}>
                                 <ListItemIcon>
                                     {item.icon || <MailIcon />}
@@ -127,7 +124,7 @@ const VMenu:any = ({  }: any) => {
                             <ListItem key={'List_' + index0 + '_' + index} disablePadding style={{ paddingLeft: '40px' }}>
                                 <ListItemButton onClick={item.onClick ? item.onClick : () => {
                                     handleDrawerToggle();
-                                    navigate(import.meta.env.VITE_BASE+item.path);
+                                    navigate(item.path);
                                 }}>
                                     <ListItemIcon>
                                         {item.icon || <MailIcon />}
