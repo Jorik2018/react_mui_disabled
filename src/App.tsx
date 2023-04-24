@@ -65,6 +65,7 @@ function App() {
     dispatch({ type: 'error', msg: ('<b>' + request.url + '</b><br/>' + request.error + '->' + request.message) });
   };
 
+  
   useEffect(() => {
     App2.addListener('appUrlOpen', (event) => {
       dispatch({ type: 'appUrlOpen', url: event.url });
@@ -72,10 +73,12 @@ function App() {
   }, [dispatch]);
 
   if (!token) {
-    return <><OAuth setToken={setToken} url={url} redirect={(url:any)=>{
-      dispatch({ type: 'appUrlOpen', url: url });
-    }}/><VDialog /></>
-  }
+		return <><OAuth oauth_url={import.meta.env.VITE_APP_OAUTH_URL} 
+			client_id={import.meta.env.VITE_APP_OAUTH_CLIENT_ID}
+			setToken={setToken} url={url} redirect={(url:any)=>{
+		  dispatch({ type: 'appUrlOpen', url: url });
+		}}/></>
+	}
 
   const disableds:any = useLiveQuery(
     () => db.disabled.toArray()
@@ -116,6 +119,7 @@ function App() {
       
     },
   });
+
   return (
     <ThemeProvider theme={theme}>
       <div className="App">

@@ -146,8 +146,6 @@ const HomePage:any = ({ logOut }: any) => {
     .then(module => ({ default: module.Form }))
   );
 
-
-
   return (
     <Box
       sx={{ display: 'flex' }}>

@@ -24,7 +24,7 @@ http.baseURL = import.meta.env.VITE_APP_BASE_URL;
 let connected=null;
 try{
   let session=JSON.parse(localStorage.getItem('session'));
-  connected=session.connected;
+  if(session)connected=session.connected;
 }finally{}
 function counterReducer(state:any = {title:'',networkStatus:{},drawer:false, url:null,load: false,
  snack: null, cb: null, dialog: null, result: null, 

@@ -18,9 +18,15 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useToken } from 'gra-react-utils';
 
-const VMenu:any = ({ logOut }: any) => {
+const VMenu:any = ({  }: any) => {
 
+    const { logOut } = useToken();
+
+    console.log('==========333333333333333==');
+    console.log(logOut);
+  
     const dispatch = useDispatch();
 
     const handleDrawerToggle = () => {
@@ -76,6 +82,7 @@ const VMenu:any = ({ logOut }: any) => {
         },
         {
             text: 'Salir', icon: <LogoutIcon />, onClick: () => {
+                console.log(logOut);
                 logOut();
             }
         }
