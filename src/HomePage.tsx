@@ -84,13 +84,17 @@ const HomePage:any = ({ logOut }: any) => {
       let s: any = localStorage.getItem("perms");
       if (s) {
         s = JSON.parse(s);
-        setPerms(s);
-        
+        setPerms(s); 
       }
     } catch (e: any) {
       console.log(e);
     }
-    console.log('homemounted');
+    try {
+      let session=JSON.parse(localStorage.getItem('session'));
+      if(session&&session.perms)setPerms(session.perms);
+  } catch (e: any) {
+      console.log(e);
+  }
     b[0]=(formRef.current);
   }, []);
 
