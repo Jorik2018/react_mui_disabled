@@ -64,11 +64,11 @@ export const Form = () => {
           }}`,
     };
     http.gql('/api/admin/graphql', data).then((data) => {
-      set(data.user);
+      if(data)set(data.user);
     });
   }, []);
 
-  useEffect(({ width, height }) => {
+  useResize(({ width, height }) => {
     if (formRef.current) {
       const header = document.querySelector('.MuiToolbar-root');
       const [body] = formRef.current.children;

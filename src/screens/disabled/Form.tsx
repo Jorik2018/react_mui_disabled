@@ -107,8 +107,9 @@ export const Form = () => {
   useResize(({width, height}:any) => {
     if (formRef.current) {
       const [body, toolBar]:any = formRef.current.children;
-      body.style.height = (height - toolBar.offsetHeight) + 'px';
       toolBar.style.width = width + 'px';
+      body.style.height = (height - toolBar.offsetHeight) + 'px';
+      body.style.width = width + 'px';
     }
   },viewRef);
 
